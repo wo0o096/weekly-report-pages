@@ -78,22 +78,29 @@ html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFo
 .group-comment { background: var(--bg-comment); padding: 4px 8px; min-height: 22px; border-radius: 3px; margin: 4px 0; font-size: 12px; outline: none; white-space: pre-wrap; color: #444; }
 .group-comment:empty::before { content: "코멘트 입력 (텍스트 전용)"; color: #aaa; font-style: italic; }
 .group-comment:focus { background: #fff8b8; }
-/* 첨부 자료 영역 — 이미지 전용 박스. 절대 폭 제한으로 큰 캡쳐도 표 밖으로 안 넘침. */
+/* 첨부 자료 영역 — 이미지 전용 박스. 폭은 부모(코멘트와 동일) 따름. */
 .group-attachments, .action-attachments {
   background: #fafafa; border: 1px dashed #ccc; padding: 8px;
-  margin: 6px 0; border-radius: 4px; max-width: 720px;
+  margin: 6px 0; border-radius: 4px;
   min-height: 36px; outline: none;
   display: flex; flex-direction: column; gap: 6px;
 }
 .group-attachments:empty::before, .action-attachments:empty::before {
-  content: "📎 자료 첨부 (Ctrl+V / 드래그&드롭 — 이미지만)";
+  content: "📎 자료 첨부 (Ctrl+V / 드래그&드롭 — 이미지만. 이미지 클릭 = 크기 변경)";
   color: #aaa; font-style: italic; font-size: 11.5px;
 }
 .group-attachments:focus, .action-attachments:focus { background: #fff8b8; border-color: #d6a83e; }
+/* 인라인 이미지 — 기본 100% (코멘트 폭). 클릭으로 4단계 크기 토글. */
 .inline-img {
-  display: block; max-width: 100%; width: auto; height: auto;
+  display: block; width: 100%; max-width: 100%; height: auto;
   border-radius: 4px; border: 1px solid #ddd; margin: 0;
+  cursor: zoom-in;
+  transition: width 0.15s ease;
 }
+.inline-img.size-small  { width: 33%;  cursor: zoom-in; }
+.inline-img.size-medium { width: 66%;  cursor: zoom-in; }
+.inline-img.size-full   { width: 100%; cursor: zoom-in; }
+.inline-img.size-orig   { width: auto; max-width: 100%; cursor: zoom-out; }
 .perf-wrap { width: 100%; overflow-x: auto; margin-top: 4px; }
 .perf-wrap::-webkit-scrollbar { height: 8px; }
 .perf-wrap::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
@@ -289,7 +296,8 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
     reader.onload = function (ev) {
       const img = new Image();
       img.onload = function () {
-        const maxW = 800;
+        // 1600px 까지 허용 — 100% 폭으로 표시되어도 흐릿하지 않게.
+        const maxW = 1600;
         const scale = Math.min(1, maxW / img.width);
         const w = Math.round(img.width * scale);
         const h = Math.round(img.height * scale);
@@ -305,6 +313,20 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
     };
     reader.onerror = function () { cb(null); };
     reader.readAsDataURL(file);
+  }
+  // 이미지 클릭 = 크기 4단계 토글 (small → medium → full → orig → ...)
+  const SIZE_CYCLE = ['size-medium', 'size-full', 'size-orig', 'size-small'];
+  function cycleImageSize(img) {
+    let cur = -1;
+    for (let i = 0; i < SIZE_CYCLE.length; i++) {
+      if (img.classList.contains(SIZE_CYCLE[i])) { cur = i; break; }
+    }
+    SIZE_CYCLE.forEach(function (c) { img.classList.remove(c); });
+    const next = SIZE_CYCLE[(cur + 1) % SIZE_CYCLE.length];
+    img.classList.add(next);
+    // 저장 — 부모 attachments div 의 blur 이벤트 트리거
+    const parent = img.closest('[data-edit-key]');
+    if (parent) parent.dispatchEvent(new Event('blur'));
   }
   function attachImagePasteAndDrop(el) {
     el.addEventListener('paste', function (e) {
@@ -341,6 +363,12 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
           fileToResizedDataUrl(f, function (du) { if (du) insertImageDataUrl(el, du); });
           return;
         }
+      }
+    });
+    // 이미지 클릭 = 크기 토글
+    el.addEventListener('click', function (e) {
+      if (e.target && e.target.tagName === 'IMG' && e.target.classList.contains('inline-img')) {
+        cycleImageSize(e.target);
       }
     });
   }
