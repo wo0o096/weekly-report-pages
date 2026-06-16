@@ -76,8 +76,10 @@ html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFo
 .group-title::before { content: "◆ "; }
 .group-title:focus { background: #fef9e7; }
 .group-comment { background: var(--bg-comment); padding: 4px 8px; min-height: 22px; border-radius: 3px; margin: 4px 0; font-size: 12px; outline: none; white-space: pre-wrap; color: #444; }
-.group-comment:empty::before { content: "코멘트를 클릭해서 입력..."; color: #aaa; font-style: italic; }
+.group-comment:empty::before { content: "코멘트 입력 (이미지 붙여넣기 Ctrl+V / 드래그&드롭 가능)"; color: #aaa; font-style: italic; }
 .group-comment:focus { background: #fff8b8; }
+/* 코멘트 영역에 paste/drop 된 인라인 이미지 — 가로 800px 로 리사이즈 후 dataURL 저장 */
+.inline-img { max-width: 100%; display: block; margin: 6px 0; border-radius: 4px; border: 1px solid #ddd; }
 .perf-wrap { width: 100%; overflow-x: auto; margin-top: 4px; }
 .perf-wrap::-webkit-scrollbar { height: 8px; }
 .perf-wrap::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
@@ -96,7 +98,7 @@ html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFo
 .action-block { margin-top: 32px; padding: 12px; background: var(--bg-action); border-radius: 6px; }
 .action-block h3 { margin: 0 0 6px 0; color: var(--accent); font-size: 14px; }
 .action-comment { background: var(--bg-comment); padding: 8px 12px; min-height: 50px; border-radius: 4px; outline: none; font-size: 13px; white-space: pre-wrap; }
-.action-comment:empty::before { content: "이번 주 액션 방향 제안을 입력하세요..."; color: #aaa; font-style: italic; }
+.action-comment:empty::before { content: "이번 주 액션 방향 제안을 입력하세요 (이미지 Ctrl+V / 드래그&드롭 가능)..."; color: #aaa; font-style: italic; }
 .action-comment:focus { background: #fff8b8; }
 
 .budget-block { margin-top: 12px; padding: 12px; background: #fff8e1; border: 1px dashed #d6a83e; border-radius: 6px; }
@@ -218,16 +220,108 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
   }
   const edits = loadEdits();
 
+  // ===== 코멘트 칸에 이미지 paste/drop 삽입 (가로 800px 로 자동 리사이즈, JPEG 변환) =====
+  function insertImageDataUrl(el, dataUrl) {
+    // 현재 커서 위치 또는 끝에 <img> 삽입
+    el.focus();
+    const imgEl = document.createElement('img');
+    imgEl.src = dataUrl;
+    imgEl.className = 'inline-img';
+    let sel = window.getSelection();
+    let range;
+    if (sel && sel.rangeCount && el.contains(sel.anchorNode)) {
+      range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(imgEl);
+      range.setStartAfter(imgEl);
+      range.collapse(true);
+      sel.removeAllRanges(); sel.addRange(range);
+    } else {
+      el.appendChild(imgEl);
+    }
+    // 저장 트리거
+    el.dispatchEvent(new Event('blur'));
+  }
+  function fileToResizedDataUrl(file, cb) {
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      const img = new Image();
+      img.onload = function () {
+        const maxW = 800;
+        const scale = Math.min(1, maxW / img.width);
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        cb(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = function () { cb(null); };
+      img.src = ev.target.result;
+    };
+    reader.onerror = function () { cb(null); };
+    reader.readAsDataURL(file);
+  }
+  function attachImagePasteAndDrop(el) {
+    el.addEventListener('paste', function (e) {
+      const cd = e.clipboardData || window.clipboardData;
+      if (!cd) return;
+      const items = cd.items || [];
+      // 1) 이미지 파일이 있으면 dataURL 변환 후 삽입
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        if (it.kind === 'file' && it.type && it.type.indexOf('image/') === 0) {
+          e.preventDefault();
+          const f = it.getAsFile();
+          if (f) fileToResizedDataUrl(f, function (du) { if (du) insertImageDataUrl(el, du); });
+          return;
+        }
+      }
+      // 2) 텍스트 paste — 스타일 제거하고 평문 삽입
+      e.preventDefault();
+      const txt = cd.getData('text/plain') || '';
+      document.execCommand('insertText', false, txt);
+    });
+    el.addEventListener('dragover', function (e) {
+      if (e.dataTransfer && e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) {
+        e.preventDefault();
+      }
+    });
+    el.addEventListener('drop', function (e) {
+      const files = e.dataTransfer && e.dataTransfer.files;
+      if (!files || !files.length) return;
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        if (f.type && f.type.indexOf('image/') === 0) {
+          e.preventDefault();
+          fileToResizedDataUrl(f, function (du) { if (du) insertImageDataUrl(el, du); });
+          return;
+        }
+      }
+    });
+  }
+
   // 인라인 편집 적용
   document.querySelectorAll('[data-edit-key]').forEach(function (el) {
     const k = el.getAttribute('data-edit-key');
-    if (edits[k] != null && edits[k] !== '') el.textContent = edits[k];
+    // 코멘트 영역(이미지 가능)은 innerHTML, 타이틀은 textContent
+    const isRich = el.classList.contains('group-comment') || el.classList.contains('action-comment');
+    if (edits[k] != null && edits[k] !== '') {
+      if (isRich) el.innerHTML = edits[k];
+      else el.textContent = edits[k];
+    }
     el.addEventListener('blur', function () {
-      const v = el.textContent.trim();
+      const v = (isRich ? el.innerHTML : el.textContent).trim();
       const all = loadEdits();
       if (v) all[k] = v;
       else delete all[k];
-      saveEdits(all);
+      try {
+        saveEdits(all);
+      } catch (err) {
+        alert('편집 저장 실패 — 브라우저 저장 용량 초과 가능성.\n\n해결: 이미지 일부 삭제 후 다시 시도하거나, [편집 내보내기] 로 백업해 두세요.');
+      }
     });
     // Enter = blur (line break 안 들어가도록 group-title 만)
     if (el.classList.contains('group-title')) {
@@ -235,6 +329,8 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
         if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
       });
     }
+    // 이미지 paste/drop 지원 — 코멘트 영역에만
+    if (isRich) attachImagePasteAndDrop(el);
   });
 
   // 편집 초기화 (텍스트 + 이미지 모두)
