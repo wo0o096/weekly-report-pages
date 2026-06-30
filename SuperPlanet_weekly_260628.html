@@ -223,20 +223,125 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
   })();
   const STORAGE_KEY = 'weekly-report-edits-v1::' + REPORT_ID;
   const IMAGE_KEY   = 'weekly-report-images-v1::' + REPORT_ID;
-  function loadEdits() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-    catch (e) { return {}; }
+
+  // ===== IndexedDB fallback (localStorage 5MB 한도 초과 회피) =====
+  const IDB_NAME = 'weekly-report-storage';
+  const IDB_STORE = 'kv';
+  let _idbDbPromise = null;
+  function _idb() {
+    if (_idbDbPromise) return _idbDbPromise;
+    _idbDbPromise = new Promise(function (resolve, reject) {
+      try {
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = function () { req.result.createObjectStore(IDB_STORE); };
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      } catch (e) { reject(e); }
+    });
+    return _idbDbPromise;
   }
-  function saveEdits(o) { localStorage.setItem(STORAGE_KEY, JSON.stringify(o)); }
+  function idbGet(key) {
+    return _idb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const req = tx.objectStore(IDB_STORE).get(key);
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    });
+  }
+  function idbSet(key, val) {
+    return _idb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(val, key);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    });
+  }
+  function idbDel(key) {
+    return _idb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).delete(key);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    });
+  }
+
+  // 메모리 캐시 — 첫 호출 후 같은 객체 반환 (동기 API 유지)
+  let _editsMem = null;
+  let _imagesMem = null;
+
+  function loadEdits() {
+    if (_editsMem !== null) return _editsMem;
+    try { _editsMem = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch (e) { _editsMem = {}; }
+    // IndexedDB 에 더 새로운 데이터가 있으면 비동기 merge
+    idbGet(STORAGE_KEY).then(function (obj) {
+      if (!obj || typeof obj !== 'object') return;
+      let added = 0;
+      for (const k in obj) { if (!(k in _editsMem)) { _editsMem[k] = obj[k]; added++; } }
+      if (added > 0) {
+        document.querySelectorAll('[data-edit-key]').forEach(function (el) {
+          const k = el.getAttribute('data-edit-key');
+          if (_editsMem[k] != null && _editsMem[k] !== '' && !el.textContent.trim() && !el.querySelector('img')) {
+            const isRich = el.classList.contains('group-attachments') || el.classList.contains('action-attachments')
+                        || el.classList.contains('group-comment') || el.classList.contains('action-comment');
+            if (isRich) el.innerHTML = _editsMem[k];
+            else el.textContent = _editsMem[k];
+          }
+        });
+      }
+    }).catch(function () {});
+    return _editsMem;
+  }
+  function saveEdits(o) {
+    _editsMem = o;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(o));
+    } catch (e) {
+      // localStorage 한도 초과 → IndexedDB 백그라운드 저장 (사용자에게는 성공으로 보임)
+      idbSet(STORAGE_KEY, o).catch(function (e2) {
+        console.error('[idb] STORAGE 저장 실패', e2);
+        alert('편집 저장 실패: ' + (e2 && e2.message || e2) + '\n\n브라우저 콘솔(F12)에서 자세한 오류 확인.');
+      });
+    }
+  }
   function loadImages() {
-    try { return JSON.parse(localStorage.getItem(IMAGE_KEY) || '{}'); }
-    catch (e) { return {}; }
+    if (_imagesMem !== null) return _imagesMem;
+    try { _imagesMem = JSON.parse(localStorage.getItem(IMAGE_KEY) || '{}'); }
+    catch (e) { _imagesMem = {}; }
+    // IndexedDB 비동기 merge — DOM 갱신
+    idbGet(IMAGE_KEY).then(function (obj) {
+      if (!obj || typeof obj !== 'object') return;
+      let added = 0;
+      for (const k in obj) { if (!(k in _imagesMem)) { _imagesMem[k] = obj[k]; added++; } }
+      if (added > 0) {
+        document.querySelectorAll('.budget-image-area').forEach(function (area) {
+          const k = area.getAttribute('data-image-key');
+          if (_imagesMem[k] && !area.classList.contains('has-image')) {
+            showBudgetImage(area, _imagesMem[k]);
+          }
+        });
+      }
+    }).catch(function () {});
+    return _imagesMem;
   }
   function saveImages(o) {
-    try { localStorage.setItem(IMAGE_KEY, JSON.stringify(o)); return true; }
-    catch (e) {
-      alert('이미지 저장 실패 — 브라우저 저장 용량을 초과했습니다.\n\n해결: 다른 앱의 이미지를 먼저 삭제하거나, 더 작은 캡쳐(JPEG 권장)를 사용하세요.');
-      return false;
+    _imagesMem = o;
+    try {
+      localStorage.setItem(IMAGE_KEY, JSON.stringify(o));
+      return true;
+    } catch (e) {
+      // localStorage 한도 초과 → IndexedDB 백그라운드 저장
+      idbSet(IMAGE_KEY, o).catch(function (e2) {
+        console.error('[idb] IMAGE 저장 실패', e2);
+        alert('이미지 저장 실패: ' + (e2 && e2.message || e2) + '\n\n브라우저 콘솔(F12)에서 자세한 오류 확인.');
+      });
+      return true;  // IndexedDB 가 백그라운드에서 처리하니 사용자엔 성공으로 표시
     }
   }
   const edits = loadEdits();
@@ -479,7 +584,10 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
       if (!confirm(msg)) return;
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(IMAGE_KEY);
-      location.reload();
+      // IndexedDB 도 비우기 (있으면)
+      Promise.all([idbDel(STORAGE_KEY), idbDel(IMAGE_KEY)]).catch(function () {}).then(function () {
+        location.reload();
+      });
     });
   }
 
