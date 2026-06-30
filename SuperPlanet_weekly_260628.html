@@ -291,28 +291,58 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
     // 저장 트리거
     el.dispatchEvent(new Event('blur'));
   }
+  // 이미지 캔버스 리사이즈 + JPEG 인코딩. 폭/품질 가변 — 용량 초과 시 자동 다운그레이드 재시도용.
+  function _canvasToDataUrl(img, maxW, quality) {
+    const scale = Math.min(1, maxW / img.width);
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas.toDataURL('image/jpeg', quality);
+  }
   function fileToResizedDataUrl(file, cb) {
     const reader = new FileReader();
     reader.onload = function (ev) {
       const img = new Image();
       img.onload = function () {
-        // 1600px 까지 허용 — 100% 폭으로 표시되어도 흐릿하지 않게.
-        const maxW = 1600;
-        const scale = Math.min(1, maxW / img.width);
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        cb(canvas.toDataURL('image/jpeg', 0.85));
+        // 1200px / 품질 0.75 — 가로 100% 표시 시 가독성 충분, 한 장 ~80-150KB.
+        cb(_canvasToDataUrl(img, 1200, 0.75), img);
       };
-      img.onerror = function () { cb(null); };
+      img.onerror = function () { cb(null, null); };
       img.src = ev.target.result;
     };
-    reader.onerror = function () { cb(null); };
+    reader.onerror = function () { cb(null, null); };
     reader.readAsDataURL(file);
+  }
+  // 저장 용량 초과 시 attachments 안의 모든 이미지를 더 강하게 다운그레이드 (800px/0.55)
+  async function _downgradeAllImages() {
+    const imgs = document.querySelectorAll('.group-attachments img.inline-img, .action-attachments img.inline-img');
+    if (!imgs.length) return false;
+    for (let i = 0; i < imgs.length; i++) {
+      const im = imgs[i];
+      const src = im.getAttribute('src') || '';
+      if (src.indexOf('data:') !== 0) continue;
+      // 이미 너무 작은 dataURL 은 스킵 (대략 50KB 미만)
+      if (src.length < 70_000) continue;
+      try {
+        const newImg = await new Promise(function (resolve, reject) {
+          const x = new Image();
+          x.onload = function () { resolve(x); };
+          x.onerror = reject;
+          x.src = src;
+        });
+        const newSrc = _canvasToDataUrl(newImg, 800, 0.55);
+        im.setAttribute('src', newSrc);
+      } catch (e) { /* skip */ }
+    }
+    // 부모 attachments 모두 재저장 트리거
+    document.querySelectorAll('.group-attachments[data-edit-key], .action-attachments[data-edit-key]').forEach(function (el) {
+      el.dispatchEvent(new Event('blur'));
+    });
+    return true;
   }
   // 이미지 클릭 = 크기 4단계 토글 (small → medium → full → orig → ...)
   const SIZE_CYCLE = ['size-medium', 'size-full', 'size-orig', 'size-small'];
@@ -329,42 +359,58 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
     if (parent) parent.dispatchEvent(new Event('blur'));
   }
   function attachImagePasteAndDrop(el) {
+    // 이미지를 허용하는 영역은 attachments 만 — 코멘트(group-comment/action-comment)는 텍스트만.
+    const acceptsImage = el.classList.contains('group-attachments') || el.classList.contains('action-attachments');
     el.addEventListener('paste', function (e) {
       const cd = e.clipboardData || window.clipboardData;
       if (!cd) return;
       const items = cd.items || [];
-      // 1) 이미지 파일이 있으면 dataURL 변환 후 삽입
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        if (it.kind === 'file' && it.type && it.type.indexOf('image/') === 0) {
-          e.preventDefault();
-          const f = it.getAsFile();
-          if (f) fileToResizedDataUrl(f, function (du) { if (du) insertImageDataUrl(el, du); });
-          return;
+      // 1) 이미지 파일 — attachments 만 받고, 코멘트에서는 스킵하고 텍스트 paste 로 폴백
+      if (acceptsImage) {
+        for (let i = 0; i < items.length; i++) {
+          const it = items[i];
+          if (it.kind === 'file' && it.type && it.type.indexOf('image/') === 0) {
+            e.preventDefault();
+            const f = it.getAsFile();
+            if (f) fileToResizedDataUrl(f, function (du) { if (du) insertImageDataUrl(el, du); });
+            return;
+          }
         }
       }
-      // 2) 텍스트 paste — 스타일 제거하고 평문 삽입
+      // 2) 텍스트 paste — HTML 우선(줄바꿈 보존), 없으면 평문. 외부 스타일은 br/div 만 유지.
       e.preventDefault();
+      const htmlClip = cd.getData('text/html') || '';
       const txt = cd.getData('text/plain') || '';
-      document.execCommand('insertText', false, txt);
-    });
-    el.addEventListener('dragover', function (e) {
-      if (e.dataTransfer && e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) {
-        e.preventDefault();
-      }
-    });
-    el.addEventListener('drop', function (e) {
-      const files = e.dataTransfer && e.dataTransfer.files;
-      if (!files || !files.length) return;
-      for (let i = 0; i < files.length; i++) {
-        const f = files[i];
-        if (f.type && f.type.indexOf('image/') === 0) {
-          e.preventDefault();
-          fileToResizedDataUrl(f, function (du) { if (du) insertImageDataUrl(el, du); });
-          return;
+      if (htmlClip && (htmlClip.indexOf('<br') !== -1 || htmlClip.indexOf('<p') !== -1 || htmlClip.indexOf('<div') !== -1)) {
+        // 평문을 줄바꿈 보존하여 삽입 (line by line)
+        const lines = txt.split(/\r?\n/);
+        for (let i = 0; i < lines.length; i++) {
+          if (i > 0) document.execCommand('insertLineBreak', false);
+          if (lines[i]) document.execCommand('insertText', false, lines[i]);
         }
+      } else {
+        document.execCommand('insertText', false, txt);
       }
     });
+    if (acceptsImage) {
+      el.addEventListener('dragover', function (e) {
+        if (e.dataTransfer && e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) {
+          e.preventDefault();
+        }
+      });
+      el.addEventListener('drop', function (e) {
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (!files || !files.length) return;
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          if (f.type && f.type.indexOf('image/') === 0) {
+            e.preventDefault();
+            fileToResizedDataUrl(f, function (du) { if (du) insertImageDataUrl(el, du); });
+            return;
+          }
+        }
+      });
+    }
     // 이미지 클릭 = 크기 토글
     el.addEventListener('click', function (e) {
       if (e.target && e.target.tagName === 'IMG' && e.target.classList.contains('inline-img')) {
@@ -376,30 +422,52 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
   // 인라인 편집 적용
   document.querySelectorAll('[data-edit-key]').forEach(function (el) {
     const k = el.getAttribute('data-edit-key');
-    // 첨부 영역(이미지 전용)만 innerHTML, 텍스트 코멘트/타이틀은 textContent
-    const isRich = el.classList.contains('group-attachments') || el.classList.contains('action-attachments');
+    // 텍스트 + 줄바꿈을 보존해야 하는 영역(코멘트 + 첨부)은 innerHTML 저장.
+    // 타이틀(group-title)만 textContent — 한 줄 표제어라 줄바꿈 무관.
+    const isAttachments = el.classList.contains('group-attachments') || el.classList.contains('action-attachments');
+    const isComment     = el.classList.contains('group-comment')     || el.classList.contains('action-comment');
+    const isRich        = isAttachments || isComment;
     if (edits[k] != null && edits[k] !== '') {
       if (isRich) el.innerHTML = edits[k];
       else el.textContent = edits[k];
     }
     el.addEventListener('blur', function () {
-      const v = (isRich ? el.innerHTML : el.textContent).trim();
+      let v;
+      if (isRich) {
+        v = el.innerHTML.trim();
+        // 빈 줄바꿈만 있으면 (br/div 만 있고 텍스트·이미지 없음) 빈 값 처리 → placeholder 표시
+        if (!el.textContent.trim() && !el.querySelector('img')) v = '';
+      } else {
+        v = el.textContent.trim();
+      }
       const all = loadEdits();
-      if (v) all[k] = v;
-      else delete all[k];
+      if (v) {
+        all[k] = v;
+      } else {
+        delete all[k];
+        if (isRich) el.innerHTML = '';  // 빈 줄바꿈 잔여(<br>) 정리해서 placeholder 다시 노출
+      }
       try {
         saveEdits(all);
       } catch (err) {
-        alert('편집 저장 실패 — 브라우저 저장 용량 초과 가능성.\n\n해결: 이미지 일부 삭제 후 다시 시도하거나, [편집 내보내기] 로 백업해 두세요.');
+        // 용량 초과 — 이미지 자동 다운그레이드 후 재시도
+        _downgradeAllImages().then(function (downgraded) {
+          try {
+            saveEdits(loadEdits());  // 다운그레이드 트리거된 blur 이벤트가 저장한 상태로 한 번 더
+            alert('저장 용량 부족으로 이미지 자동 압축 적용했습니다 (해상도 800px / 품질 55%).');
+          } catch (err2) {
+            alert('편집 저장 실패 — 브라우저 저장 용량 초과.\n\n해결:\n· [편집 내보내기] 로 JSON 백업\n· 첨부 이미지 일부 삭제 (이미지 클릭 후 Delete 키)\n· 다른 탭의 같은 도메인 캐시 정리');
+          }
+        });
       }
     });
-    // Enter = blur (line break 안 들어가도록 group-title 만)
+    // Enter = blur (group-title 만 — 코멘트 영역은 줄바꿈 허용)
     if (el.classList.contains('group-title')) {
       el.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
       });
     }
-    // 이미지 paste/drop 지원 — 코멘트 영역에만
+    // 이미지 paste/drop + 텍스트 paste 정제 — 모든 rich 영역
     if (isRich) attachImagePasteAndDrop(el);
   });
 
