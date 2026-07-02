@@ -143,8 +143,14 @@ td.bar-cell { position: relative; font-weight: 700; }
 /* 2단 카드 안 표는 살짝 컴팩트하게 — 일반 노트북 폭(1600대)에서도 가로 스크롤 없이 맞춤 */
 .media-grid .cohort-mtable { font-size: 12.5px; }
 .media-grid .cohort-mtable th, .media-grid .cohort-mtable td { padding: 7px 5px; }
-/* 종합요약 Summary 코멘트 */
-.summary-comment { margin: 8px 0 14px; }
+/* 종합요약 Summary 코멘트 — 개발사 대표가 가장 먼저 보는 핵심 영역이라 본문보다 크게 */
+.summary-comment {
+  margin: 8px 0 14px;
+  font-size: 16px;
+  line-height: 1.65;
+  padding: 10px 14px;
+  color: #222;
+}
 /* 매체별 카드 배경색 (Meta=연한 하늘색, Google Ads=연한 초록색, 기타=연회색) */
 .media-grid .group-block { padding: 10px 14px 8px; border-radius: 8px; }
 .group-block.media-meta   { background: #eaf4fd; }
