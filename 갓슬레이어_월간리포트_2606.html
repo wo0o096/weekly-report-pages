@@ -355,7 +355,7 @@ body.print-mode .os-block.collapsed .os-body { display: block !important; }
 </div>
 <style>#pw-gate~*:not(script){display:none!important}</style>
 <script>
-const PW_HASH="5db34fbef0990d8ac0420b93d8efd2e5ca4a7a2e8c62780bb1aac4b888afb49d";
+const PW_HASH="fe4ea6a93e7874679b6badc5b8e8270a7636e6696e98913d277d96d40fcaf11d";
 async function sha256(s){const b=new TextEncoder().encode(s);const h=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,"0")).join("")}
 async function checkPw(){var v=document.getElementById("pw-input").value;var h=await sha256(v);if(h===PW_HASH){document.getElementById("pw-gate").remove();document.querySelectorAll("style").forEach(s=>{if(s.textContent.includes("pw-gate"))s.remove()})}else{document.getElementById("pw-err").textContent="비밀번호가 올바르지 않습니다."}}
 document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.getElementById("pw-gate"))checkPw()});
