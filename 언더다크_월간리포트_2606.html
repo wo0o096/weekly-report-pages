@@ -1,0 +1,1136 @@
+<!doctype html><html lang='ko'><head><meta charset='utf-8'><title>언더다크 월간리포트 — 2026년 6월 — 데이터 기간 2026-04-01 ~ 2026-06-30</title><meta name='viewport' content='width=device-width,initial-scale=1'><script src='https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'></script><style>
+:root {
+  --primary: #0b5394;
+  --accent: #b32d7a;
+  --link: #1a73e8;
+  --bg: #fafbfc;
+  --bg-card: #ffffff;
+  --border: #d8dde3;
+  --bg-hl: #fffbea;
+  --bg-camp: #f7faff;
+  --bg-os: #e8eef7;
+  --bg-kpi: #d6eaf8;
+  --bg-action: #fce8b2;
+  --bg-comment: #fffde7;
+  --text: #202124;
+  --muted: #5f6368;
+  /* ===== 플랫폼 색상 시스템 — 모든 차트/표 공통 =====
+     AOS = 그린 계열 / iOS = 블루 계열
+     기존 유저 = 파스텔(옅은색) / 신규 유저 = 고채도(진한색) */
+  --aos: #2e9e4f;
+  --aos-light: #a9d8b4;
+  --ios: #2472c8;
+  --ios-light: #aecdf0;
+  --webshop: #9b74d6;
+  --up: #1e8f45;
+  --down: #d64545;
+  --border-h: #e8ecf1;   /* 표 가로선 */
+  --th-bg: #f3f5f8;      /* 표 헤더 배경 */
+  --gap: 20px;           /* 컴포넌트 간 공통 간격 */
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", Roboto, sans-serif; color: var(--text); background: var(--bg); font-size: 14px; line-height: 1.5; }
+.container { max-width: 1700px; margin: 0 auto; padding: 16px 24px 80px; }
+.header { padding: 12px 0 8px; border-bottom: 2px solid var(--primary); margin-bottom: 16px; }
+.header h1 { margin: 0 0 4px 0; font-size: 22px; color: var(--primary); }
+.header .meta { color: var(--muted); font-size: 12px; }
+.toolbar { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; flex-wrap: wrap; }
+.toolbar .btn { padding: 4px 10px; font-size: 12px; background: #fff; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+.toolbar .btn:hover { background: var(--bg-os); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 12px 0 16px; padding: 6px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; position: sticky; top: 0; z-index: 10; }
+.tab { padding: 6px 14px; font-size: 14px; cursor: pointer; border: 1px solid transparent; border-radius: 4px; background: transparent; }
+.tab:hover { background: var(--bg-os); }
+.tab.active { background: var(--primary); color: #fff; font-weight: bold; border-color: var(--primary); }
+.app-section { display: none; }
+.app-section.active { display: block; }
+.app-title { font-size: 18px; font-weight: bold; color: var(--primary); margin: 8px 0 12px; }
+.section-h { font-size: 16px; font-weight: bold; margin: 24px 0 8px; padding: 6px 8px; background: linear-gradient(90deg, var(--bg-os), transparent); border-left: 4px solid var(--primary); }
+.subnote { color: var(--muted); font-size: 12.5px; margin: -4px 0 8px; }
+.kpi-bar { padding: 12px 16px; background: var(--bg-kpi); border-radius: 6px; font-weight: bold; font-size: 14px; margin: 8px 0 16px; word-spacing: 4px; }
+.kpi-bar .sep { color: #888; margin: 0 6px; }
+/* ===== KPI 요약 카드 (당월 핵심 지표) ===== */
+.kpi-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); margin: var(--gap) 0; }
+@media (max-width: 1100px) { .kpi-cards { grid-template-columns: repeat(2, 1fr); } }
+.kpi-card {
+  background: var(--bg-card); border: 1px solid var(--border-h); border-radius: 10px;
+  padding: 16px 20px; box-shadow: 0 1px 3px rgba(20,40,70,0.05);
+}
+.kpi-card .kpi-title { font-size: 12.5px; color: #66707c; margin-bottom: 6px; }
+.kpi-card .kpi-title .kpi-period { color: #9aa4af; font-size: 11px; }
+.kpi-card .kpi-value { font-size: 25px; font-weight: 700; color: #1c2733; line-height: 1.15; letter-spacing: -0.3px; }
+.kpi-card .kpi-delta { font-size: 13px; font-weight: 700; margin-top: 7px; }
+.kpi-card .kpi-delta.kpi-up   { color: var(--up); }
+.kpi-card .kpi-delta.kpi-down { color: var(--down); }
+.kpi-card .kpi-delta.kpi-flat { color: #99a2ab; font-weight: normal; }
+.kpi-card .kpi-sub { font-size: 10.5px; color: #a5adb5; margin-top: 2px; }
+/* 핵심 지표(매출/광고비) 강조 카드 */
+.kpi-card .kpi-icon { font-size: 15px; margin-right: 4px; }
+.kpi-card.kpi-rev  { border-left: 5px solid #2e9e4f; background: #f2faf4; }
+.kpi-card.kpi-cost { border-left: 5px solid #e08a3c; background: #fdf7ef; }
+.kpi-card.kpi-rev  .kpi-value { color: #1d7a3f; }
+.kpi-card.kpi-cost .kpi-value { color: #b06a1e; }
+.kpi-card.kpi-rev  .kpi-title b, .kpi-card.kpi-cost .kpi-title b { color: #2b3742; }
+/* 좌측 컬럼용 컴팩트 KPI 카드 (2×2) */
+.kpi-cards.kpi-compact { grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 0 0 12px; }
+.kpi-compact .kpi-card { padding: 9px 14px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.kpi-compact .kpi-card .kpi-title { margin-bottom: 0; width: 100%; }
+.kpi-compact .kpi-card .kpi-value { font-size: 19px; }
+.kpi-compact .kpi-card .kpi-delta { margin-top: 0; }
+.kpi-compact .kpi-card .kpi-sub { display: none; }
+/* 좌(차트)·우(표) 행 — stretch 로 높이 완전 일치, 간격 20px 통일 */
+.summary-grid { display: grid; grid-template-columns: 1fr 400px; gap: var(--gap); margin-bottom: var(--gap); align-items: stretch; }
+@media (max-width: 1100px) { .summary-grid { grid-template-columns: 1fr; } }
+.summary-grid .chart-wrap { margin: 0; height: 100%; min-height: 400px; position: relative; }
+.summary-grid .chart-wrap canvas { height: 100% !important; max-height: none; }
+.summary-grid .card { height: 100%; }
+.ratio-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--gap); margin-bottom: var(--gap); align-items: stretch; }
+@media (max-width: 1100px) { .ratio-grid { grid-template-columns: 1fr; } }
+.ratio-grid > div { display: flex; flex-direction: column; }
+.ratio-grid > div > h3 { margin-top: 0 !important; }
+/* 컬럼 마지막 표가 남는 높이를 채워 좌우 높이 일치 */
+.ratio-grid > div > table:last-child { flex: 1; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+.card h3 { margin: 0 0 10px 0; font-size: 14px; }
+/* 공통 표 규칙 — 세로선 제거, 옅은 가로선만. 숫자 우측·텍스트 좌측·상하 정중앙. */
+.ratio-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ratio-table th, .ratio-table td {
+  padding: 7px 12px; border: none; border-bottom: 1px solid var(--border-h);
+  text-align: right; vertical-align: middle;
+}
+.ratio-table th { background: var(--th-bg); font-weight: bold; border-bottom: 2px solid #d8dfe7; }
+.ratio-table td:first-child, .ratio-table th:first-child { text-align: left; }
+.op-table { font-size: 13px; }
+.op-vertical { width: 100%; }
+.op-vertical th, .op-vertical td { padding: 5px 12px; }
+.op-vertical th { text-align: center; background: var(--th-bg); }
+.op-vertical td.op-period { background: #eef2f8; font-weight: bold; text-align: center; vertical-align: middle; min-width: 80px; }
+.op-vertical td.op-metric { background: #fffdf2; text-align: left; min-width: 56px; vertical-align: middle; }
+.op-vertical td.op-kind { text-align: left; font-weight: bold; font-size: 12px; color: #556; min-width: 62px; white-space: nowrap; }
+.op-vertical td.op-kind-org::before  { content: "● "; color: #94a8bf; }
+.op-vertical td.op-kind-paid::before { content: "● "; color: #2e9e4f; }
+.op-vertical tr.op-row-last td { border-bottom: 2px solid #cfd6df; }
+/* Organic/Paid 값 셀 — 퍼센티지(위) + 실제값(아래), 비중만큼 막대바 배경 */
+td.op-share { position: relative; }
+.op-share .op-pct { font-weight: 700; font-size: 13px; color: #223; line-height: 1.2; }
+.op-share .op-num { font-weight: normal; font-size: 11px; color: #667; line-height: 1.25; }
+/* 미니 표 막대바 셀 — 값 크기 비례 배경, 숫자 볼드 */
+td.bar-cell { position: relative; font-weight: 700; }
+.delta-up { color: #d93025; font-weight: bold; }
+.delta-down { color: #188038; font-weight: bold; }
+.delta-flat { color: #888; }
+.chart-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin: 12px 0; }
+.chart-wrap canvas { max-width: 100%; height: 360px !important; }
+.mini-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.mini-table th, .mini-table td {
+  padding: 9px 12px; border: none; border-bottom: 1px solid var(--border-h);
+  text-align: right; vertical-align: middle;
+}
+.mini-table th { background: var(--th-bg); font-weight: bold; text-align: center; border-bottom: 2px solid #d8dfe7; }
+.mini-table td:first-child, .mini-table th:first-child { text-align: left; }
+/* 지표 컬럼 사이 확실한 구분선 (DAU↔NRU, 총매출↔일평균) */
+.mini-table td:nth-child(3), .mini-table th:nth-child(3) { border-left: 2px solid #cfd6de; }
+.media-section { margin-top: 24px; }
+/* 매체 블록 2단 배치 (전체 합산은 전폭, 개별 매체는 좌우 나란히 — 높이/너비 통일) */
+.media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px var(--gap); align-items: stretch; }
+@media (max-width: 1100px) { .media-grid { grid-template-columns: 1fr; } }
+.media-grid .group-block { margin: 8px 0; display: flex; flex-direction: column; }
+.media-grid .group-block .perf-wrap { margin-top: auto; }  /* 표를 블록 하단에 정렬 — 좌우 표 시작 높이 일치 */
+/* 월별 코호트 표 — 컬럼폭 균등·줄바꿈 금지로 좌우 블록 행 높이 통일 */
+.os-body .perf-wrap .cohort-mtable { width: 100%; margin: 10px 0 3px; }
+.os-body .cohort-mtable th, .os-body .cohort-mtable td { white-space: nowrap; padding: 8px 8px; }
+.os-body .cohort-mtable th:first-child { min-width: 64px; }
+/* 기준월(마지막 월 코호트) 행 강조 */
+.cohort-mtable tr.cm-target td { font-weight: bold; background: #fffbea; }
+.cohort-mtable tr.cm-target td.cm-immature { background: #fdf6e0; }
+.os-block { margin: 16px 0; }
+.os-header { padding: 8px 12px; background: var(--bg-os); font-weight: bold; font-size: 14px; border-radius: 4px; cursor: pointer; user-select: none; }
+.os-header::before { content: "▼ "; }
+.os-block.collapsed .os-header::before { content: "▶ "; }
+.os-block.collapsed .os-body { display: none; }
+.section-block { margin: 12px 0 12px 8px; }
+.section-name { color: var(--link); font-weight: bold; font-size: 14px; margin: 12px 0 6px; }
+.section-name::before { content: "● "; }
+.group-block { margin: 8px 0 16px 12px; padding: 8px 0; }
+.group-title { color: var(--accent); font-weight: bold; font-size: 14px; margin: 0; outline: none; padding: 2px 4px; border-radius: 3px; }
+.group-title::before { content: "◆ "; }
+.group-title:focus { background: #fef9e7; }
+.group-comment { background: var(--bg-comment); padding: 4px 8px; min-height: 22px; border-radius: 3px; margin: 4px 0; font-size: 13px; outline: none; white-space: pre-wrap; color: #444; }
+.group-comment:empty::before { content: "코멘트 입력 (텍스트 전용)"; color: #aaa; font-style: italic; }
+.group-comment:focus { background: #fff8b8; }
+/* 첨부 자료 영역 — 이미지 전용 박스. 폭은 부모(코멘트와 동일) 따름. */
+.group-attachments, .action-attachments {
+  background: #fafafa; border: 1px dashed #ccc; padding: 8px;
+  margin: 6px 0; border-radius: 4px;
+  min-height: 36px; outline: none;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.group-attachments:empty::before, .action-attachments:empty::before {
+  content: "📎 자료 첨부 (Ctrl+V / 드래그&드롭 — 이미지만. 이미지 클릭 = 크기 변경)";
+  color: #aaa; font-style: italic; font-size: 11.5px;
+}
+.group-attachments:focus, .action-attachments:focus { background: #fff8b8; border-color: #d6a83e; }
+/* 인라인 이미지 — 기본 100% (코멘트 폭). 클릭으로 4단계 크기 토글. */
+.inline-img {
+  display: block; width: 100%; max-width: 100%; height: auto;
+  border-radius: 4px; border: 1px solid #ddd; margin: 0;
+  cursor: zoom-in;
+  transition: width 0.15s ease;
+}
+.inline-img.size-small  { width: 33%;  cursor: zoom-in; }
+.inline-img.size-medium { width: 66%;  cursor: zoom-in; }
+.inline-img.size-full   { width: 100%; cursor: zoom-in; }
+.inline-img.size-orig   { width: auto; max-width: 100%; cursor: zoom-out; }
+.perf-wrap { width: 100%; overflow-x: auto; margin-top: 4px; }
+.perf-wrap::-webkit-scrollbar { height: 8px; }
+.perf-wrap::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+/* 캠페인 상세표 — 컨테이너 폭에 맞춤 (가로 스크롤 없음). 헤더는 줄바꿈 허용해 컬럼 압축. */
+.perf-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.perf-table th, .perf-table td {
+  padding: 9px 5px; border: none; border-bottom: 1px solid var(--border-h);
+  text-align: right; white-space: nowrap; vertical-align: middle;
+}
+.perf-table th { background: var(--th-bg); font-weight: bold; text-align: center; border-bottom: 2px solid #d8dfe7; white-space: normal; line-height: 1.25; }
+.perf-table td:first-child { text-align: left; min-width: 150px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; }
+.perf-table td:nth-child(2) { text-align: left; min-width: 105px; white-space: normal; }
+.perf-table tr.row-total td { background: var(--bg-hl); font-weight: bold; }
+.perf-table tr.row-camp-total td { background: var(--bg-camp); font-weight: bold; }
+.perf-table tr.row-week-last td { font-weight: bold; }
+.heat-90  { background: #cdedc4 !important; }
+.heat-70  { background: #e6f4d7 !important; }
+.heat-50  { background: #fff2cc !important; }
+.heat-low { background: #fce4e4 !important; }
+/* ===== 캠페인별 주차 코호트 회수 곡선 (small multiples) ===== */
+.perf-table tr.cohort-row td { background: #fbfcfe; padding: 0 6px !important; text-align: left; }
+.cohort-details summary {
+  cursor: pointer; font-size: 13.5px; color: #33587e; padding: 5px 8px;
+  user-select: none; list-style-position: inside;
+  background: #eef4fa; border-radius: 4px; margin: 3px 0;
+}
+.cohort-details summary:hover { background: #ddeaf7; color: #1d4b7c; }
+.cohort-details[open] summary { border-radius: 4px 4px 0 0; }
+.cohort-strip {
+  display: flex; flex-wrap: wrap; gap: 12px 14px; padding: 10px 6px 8px;
+  align-items: flex-end;
+}
+.cohort-week { flex: 0 0 auto; width: 150px; }
+.cohort-bars {
+  position: relative; height: 112px; display: flex; align-items: flex-end;
+  gap: 3px; padding: 0 3px; border-bottom: 1px solid #bbb; background: #fff;
+}
+.cohort-be-line {
+  position: absolute; left: 0; right: 0; border-top: 2px dashed #e05252;
+  z-index: 1; pointer-events: none;
+}
+.cohort-bar-col {
+  flex: 1 1 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end; height: 100%; position: relative; min-width: 0;
+}
+.cohort-val { font-size: 9.5px; color: #444; line-height: 1; margin-bottom: 2px; font-weight: 500; }
+.cohort-bar {
+  width: 100%; background: #4a86c8; border-radius: 2px 2px 0 0; min-height: 1px;
+}
+.cohort-bar.over-be { background: #3aa14f; }
+.cohort-bar.immature {
+  background: repeating-linear-gradient(45deg, #cfe0f2, #cfe0f2 3px, #eaf1f9 3px, #eaf1f9 6px);
+  border: 1px dashed #9db8d4; border-bottom: none;
+}
+.cohort-bar.immature.over-be {
+  background: repeating-linear-gradient(45deg, #c9e6cf, #c9e6cf 3px, #e8f5eb 3px, #e8f5eb 6px);
+  border-color: #93c5a1;
+}
+.cohort-dlabel { font-size: 8.5px; color: #777; line-height: 1.5; }
+.cohort-wlabel { text-align: center; font-size: 11px; color: #444; margin-top: 4px; line-height: 1.35; font-weight: normal; }
+.cohort-wlabel b, .cohort-wlabel { font-weight: normal; }
+.cohort-wlabel .cw-range { font-weight: bold; color: #333; }
+/* 월별 코호트 회수율 미니 표 (곡선 아래) */
+.cohort-mtable { border-collapse: collapse; margin: 10px 4px 3px; font-size: 13.5px; }
+.cohort-mtable th, .cohort-mtable td {
+  border: none; border-bottom: 1px solid var(--border-h);
+  padding: 9px 13px; text-align: right; font-weight: normal; vertical-align: middle;
+}
+.cohort-mtable th { background: var(--th-bg); text-align: center; color: #445; font-size: 12.5px; border-bottom: 2px solid #d8dfe7; }
+.cohort-mtable td.cm-label { text-align: left; font-weight: bold; color: #333; }
+.cohort-mtable td.cm-cost { color: #666; }
+.cohort-mtable td.cm-immature { color: #7d99b5; font-style: italic; background: #f7fafd; }
+.cohort-mtable td.cm-over { color: #2f8a43; font-weight: bold; }
+.cohort-mtable td.cm-over.cm-immature { color: #6ba57a; }
+.cohort-mtable .cm-pending { font-size: 10px; margin-left: 1px; }
+.cohort-mnote { font-size: 11.5px; color: #888; margin: 4px 4px 8px; }
+.action-block { margin-top: 32px; padding: 12px; background: var(--bg-action); border-radius: 6px; }
+.action-block h3 { margin: 0 0 6px 0; color: var(--accent); font-size: 14px; }
+.action-comment { background: var(--bg-comment); padding: 8px 12px; min-height: 50px; border-radius: 4px; outline: none; font-size: 13px; white-space: pre-wrap; }
+.action-comment:empty::before { content: "이번 주 액션 방향 제안을 입력하세요 (텍스트 전용)..."; color: #aaa; font-style: italic; }
+.action-comment:focus { background: #fff8b8; }
+
+.budget-block { margin-top: 12px; padding: 12px; background: #fff8e1; border: 1px dashed #d6a83e; border-radius: 6px; }
+.budget-block h3 { margin: 0 0 6px 0; color: #8a5a00; font-size: 14px; }
+.budget-block .hint { font-size: 12px; color: #8a5a00; margin-bottom: 6px; }
+.budget-image-area { background: #fff; border: 2px dashed #d6a83e; border-radius: 6px; min-height: 80px; padding: 12px; text-align: center; cursor: pointer; transition: background 0.15s; outline: none; }
+.budget-image-area:focus { background: #fffbe6; border-color: #b8860b; }
+.budget-image-area.has-image { padding: 8px; cursor: default; border-style: solid; }
+.budget-placeholder { color: #aaa; font-style: italic; font-size: 13px; padding: 24px 0; }
+.budget-image { max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 4px; }
+.budget-controls { margin-top: 8px; text-align: right; }
+.budget-controls .btn-delete-image { padding: 4px 10px; font-size: 12px; background: #fff; border: 1px solid #d93025; color: #d93025; border-radius: 4px; cursor: pointer; }
+.budget-controls .btn-delete-image:hover { background: #fce4e4; }
+.budget-size-warn { color: #d93025; font-size: 11px; margin-top: 4px; }
+
+/* ===== PDF 인쇄용 모드 ===== */
+/* (1) 화면용: print-mode 클래스가 body 에 붙으면 모든 섹션 펼치기 */
+body.print-mode .app-section { display: block !important; }
+body.print-mode .tabs,
+body.print-mode .toolbar,
+body.print-mode .header .toolbar { display: none !important; }
+body.print-mode .os-block.collapsed .os-body { display: block !important; }
+
+/* (2) 실제 PDF 저장용: 브라우저가 인쇄 미리보기/PDF 출력할 때 적용
+   화면 레이아웃(2단 grid)을 유지해서 표가 불필요하게 가로로 늘어나지 않게 함. */
+@media print {
+  body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .container { max-width: 100% !important; padding: 0 6mm !important; }
+  .tabs, .toolbar, .header .toolbar { display: none !important; }
+  .header { border-bottom: 2px solid #0b5394 !important; margin-bottom: 6px !important; padding-bottom: 4px !important; }
+  .app-section { display: block !important; page-break-before: always; padding-top: 2mm; }
+  .app-section:first-of-type { page-break-before: auto; }
+  .app-title { font-size: 14pt !important; margin: 4mm 0 2mm !important; }
+  .section-h { font-size: 12pt !important; margin: 4mm 0 2mm !important; page-break-after: avoid; }
+  .subnote { font-size: 9pt !important; }
+  .kpi-bar { font-size: 10pt !important; padding: 6px 10px !important; margin: 4mm 0 !important; }
+  .kpi-cards { gap: 4mm !important; margin: 3mm 0 !important; grid-template-columns: repeat(4, 1fr) !important; }
+  .kpi-card { padding: 8px 12px !important; page-break-inside: avoid; }
+  .kpi-card .kpi-value { font-size: 15pt !important; }
+  .ratio-table th, .ratio-table td, .mini-table th, .mini-table td { padding: 5px 8px !important; }
+
+  /* ✅ grid 레이아웃 그대로 유지 — 표가 페이지 전폭으로 늘어나지 않게 */
+  .summary-grid { display: grid !important; grid-template-columns: 1fr 60mm !important; gap: 4mm !important; margin-bottom: 4mm !important; page-break-inside: avoid; }
+  .ratio-grid   { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) !important; gap: 6mm !important; page-break-inside: avoid; }
+
+  .chart-wrap { padding: 4px !important; margin: 0 !important; }
+  .chart-wrap canvas { max-height: 70mm !important; height: 70mm !important; width: 100% !important; }
+  .card { padding: 6px !important; }
+  .card h3 { font-size: 10pt !important; margin: 0 0 4px !important; }
+  .mini-table { font-size: 8pt !important; }
+  .mini-table th, .mini-table td { padding: 2px 4px !important; }
+
+  .ratio-table { font-size: 9pt !important; page-break-inside: avoid; }
+  .ratio-table th, .ratio-table td { padding: 3px 6px !important; }
+  .op-vertical { page-break-inside: avoid; font-size: 8.5pt !important; }
+  .op-vertical th, .op-vertical td { padding: 2px 4px !important; }
+
+  .perf-wrap { overflow: visible !important; }
+  .perf-table { font-size: 7.5pt !important; page-break-inside: avoid; }
+  .perf-table th, .perf-table td { padding: 2px 3px !important; }
+  .perf-table td:first-child { max-width: 60mm !important; }
+  /* 코호트 곡선 — 인쇄 시 가로 스크롤 대신 줄바꿈, 페이지 넘김 방지 */
+  .cohort-strip { flex-wrap: wrap; overflow-x: visible !important; }
+  .cohort-row { page-break-inside: avoid; }
+  .cohort-details summary { font-size: 8pt !important; }
+
+  .group-block { page-break-inside: avoid; margin-bottom: 3mm !important; padding: 4px 0 !important; }
+  .group-title { font-size: 10pt !important; }
+  .group-comment { font-size: 8.5pt !important; padding: 2px 6px !important; }
+
+  .group-comment[contenteditable]:empty::before,
+  .action-comment:empty::before { content: ""; }
+  .budget-placeholder { display: none !important; }
+  .budget-controls { display: none !important; }
+  .budget-image { max-height: 110mm !important; object-fit: contain; }
+  .os-block.collapsed .os-body { display: block !important; }
+  .os-header { font-size: 11pt !important; padding: 4px 8px !important; }
+
+  /* contenteditable 셀의 outline/border 제거 */
+  [contenteditable] { outline: none !important; }
+}
+@page { size: A4 landscape; margin: 6mm; }
+</style></head><body>
+<div id="pw-gate" style="position:fixed;inset:0;z-index:99999;background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="background:#fff;padding:32px 40px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.3);min-width:320px">
+    <h2 style="margin:0 0 16px 0;color:#1a1a2e;font-size:18px">SuperPlanet 월간리포트</h2>
+    <p style="color:#666;font-size:13px;margin:0 0 16px 0">비밀번호를 입력하세요</p>
+    <input id="pw-input" type="password" placeholder="Password"
+      style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;box-sizing:border-box;outline:none" autofocus>
+    <p id="pw-err" style="color:#d93025;font-size:12px;margin:8px 0 0 0;height:16px"></p>
+    <button onclick="checkPw()" style="margin-top:8px;width:100%;padding:10px;background:#0b5394;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer">확인</button>
+  </div>
+</div>
+<style>#pw-gate~*:not(script){display:none!important}</style>
+<script>
+const PW_HASH="26057a5e4ac717362d641e9472499984e935d5746d0519ef468b07ae0ea181a5";
+async function sha256(s){const b=new TextEncoder().encode(s);const h=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function checkPw(){var v=document.getElementById("pw-input").value;var h=await sha256(v);if(h===PW_HASH){document.getElementById("pw-gate").remove();document.querySelectorAll("style").forEach(s=>{if(s.textContent.includes("pw-gate"))s.remove()})}else{document.getElementById("pw-err").textContent="비밀번호가 올바르지 않습니다."}}
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.getElementById("pw-gate"))checkPw()});
+</script>
+<div class='container'><div class='header'><h1>언더다크 월간리포트 — 2026년 6월</h1><div class='meta'>데이터 기간 2026-04-01 ~ 2026-06-30  ·  기준일 2026-06-30 까지 포함  ·  앱 1개</div><div class='toolbar'><button class='btn' id='save-pdf' style='background:#fff3cd;border-color:#d6a83e' title='상사·외부 공유용. 모든 탭을 펼쳐 PDF 저장 다이얼로그를 띄웁니다. 대상에서 PDF로 저장 선택.'>📄 PDF로 저장 (전체 탭)</button><button class='btn' id='share-html' style='background:#cfe5ff;border-color:#3b82f6' title='입력한 코멘트·이미지가 박힌 HTML 을 다운로드. 다운로드한 파일을 republish_with_edits.bat 으로 발행하면 같은 URL 에 박힌 내용이 그대로 올라가서 다른 사람도 봅니다.'>📤 공유본 다운로드 (URL 공유용)</button><button class='btn' id='export-edits' title='지금까지 입력한 코멘트·타이틀·일예산 이미지를 JSON 파일로 다운로드합니다. 동료분께 전달해서 합칠 수 있어요.'>💾 편집 내보내기</button><button class='btn' id='import-edits' title='동료분이 보낸 JSON 파일을 불러와 현재 편집과 합칩니다. 같은 항목은 새로 불러온 값으로 덮어씁니다.'>📥 편집 불러오기 (병합)</button><input type='file' id='import-edits-file' accept='application/json,.json' style='display:none'><button class='btn' id='reset-edits'>🗑 편집 초기화</button><span style='color:#888;font-size:12px;margin-left:6px'>(편집은 이 브라우저에 저장됩니다 · 동료와 공유하려면 [내보내기] → JSON 전달 → 상대가 [불러오기])</span></div></div><section class="app-section" id="app-언더다크"><div class="app-title">■ 언더다크</div><h2 class="section-h">■ 종합 요약 (내부 지표)</h2><div class="subnote">기준일 2026-06-30 까지 포함  ·  내부 타이틀: 언더다크</div><div class="ratio-grid"><div><div class="kpi-cards kpi-compact"><div class="kpi-card kpi-rev"><div class="kpi-title"><span class="kpi-icon">💰</span><b>총 매출</b> <span class="kpi-period">(6월)</span></div><div class="kpi-value">₩1.4억</div><div class="kpi-delta kpi-down" title="전월 대비 · 일평균 기준">▼ -17.5%</div><div class="kpi-sub">전월 대비 · 일평균 기준</div></div><div class="kpi-card kpi-cost"><div class="kpi-title"><span class="kpi-icon">📢</span><b>총 광고비</b> <span class="kpi-period">(6월)</span></div><div class="kpi-value">₩4506.6만</div><div class="kpi-delta kpi-down" title="전월 대비 · 일평균 기준">▼ -18.6%</div><div class="kpi-sub">전월 대비 · 일평균 기준</div></div><div class="kpi-card"><div class="kpi-title"><span class="kpi-icon">👥</span><b>DAU 일평균</b> <span class="kpi-period">(6월)</span></div><div class="kpi-value">13,656</div><div class="kpi-delta kpi-down" title="전월 대비 · 일평균 기준">▼ -15.2%</div><div class="kpi-sub">전월 대비 · 일평균 기준</div></div><div class="kpi-card"><div class="kpi-title"><span class="kpi-icon">✨</span><b>NRU 일평균</b> <span class="kpi-period">(6월)</span></div><div class="kpi-value">1,289</div><div class="kpi-delta kpi-down" title="전월 대비 · 일평균 기준">▼ -22.7%</div><div class="kpi-sub">전월 대비 · 일평균 기준</div></div></div><h3 style="margin:16px 0 8px;font-size:14px;">■ 월별 광고비 / 매출 비율 (최근 3개월)</h3><table class="ratio-table"><thead><tr><th>기간</th><th>광고비 (Cost)</th><th>매출 (IAP+IAA)</th><th>광고비/매출</th><th>전월 대비</th></tr></thead><tbody><tr><td>4월</td><td>₩70,598,259</td><td>₩192,706,430</td><td><b>36.64%</b></td><td style='text-align:center'><span class="delta-flat">—</span></td></tr><tr><td>5월</td><td>₩57,185,770</td><td>₩173,332,784</td><td><b>32.99%</b></td><td style='text-align:center'><span class="delta-down">▼ -3.64%p</span></td></tr><tr><td>6월</td><td>₩45,065,562</td><td>₩138,424,967</td><td><b>32.56%</b></td><td style='text-align:center'><span class="delta-down">▼ -0.44%p</span></td></tr></tbody></table></div><div><h3 style="margin:16px 0 6px;font-size:14px;">■ AOS Organic / Paid 비중 (최근 3개월)</h3><table class="ratio-table op-table op-vertical"><thead><tr><th>지표</th><th>구분</th><th>4월</th><th>5월</th><th>6월</th></tr></thead><tbody><tr><td rowspan="2" class="op-metric"><b>Install</b></td><td class="op-kind op-kind-org">Organic</td><td class="op-share" style="background:linear-gradient(90deg,rgba(148,168,191,0.32) 76.9%,transparent 76.9%)"><div class="op-pct">76.9%</div><div class="op-num">32,984</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(148,168,191,0.32) 76.1%,transparent 76.1%)"><div class="op-pct">76.1%</div><div class="op-num">29,983</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(148,168,191,0.32) 56.0%,transparent 56.0%)"><div class="op-pct">56.0%</div><div class="op-num">16,169</div></td></tr><tr class="op-row-last"><td class="op-kind op-kind-paid">Paid</td><td class="op-share" style="background:linear-gradient(90deg,rgba(46,158,79,0.24) 23.1%,transparent 23.1%)"><div class="op-pct">23.1%</div><div class="op-num">9,890</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(46,158,79,0.24) 23.9%,transparent 23.9%)"><div class="op-pct">23.9%</div><div class="op-num">9,394</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(46,158,79,0.24) 44.0%,transparent 44.0%)"><div class="op-pct">44.0%</div><div class="op-num">12,708</div></td></tr><tr><td rowspan="2" class="op-metric"><b>LTV</b></td><td class="op-kind op-kind-org">Organic</td><td class="op-share" style="background:linear-gradient(90deg,rgba(148,168,191,0.32) 43.4%,transparent 43.4%)"><div class="op-pct">43.4%</div><div class="op-num">₩37,602,919</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(148,168,191,0.32) 41.9%,transparent 41.9%)"><div class="op-pct">41.9%</div><div class="op-num">₩30,595,443</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(148,168,191,0.32) 35.2%,transparent 35.2%)"><div class="op-pct">35.2%</div><div class="op-num">₩13,723,587</div></td></tr><tr class="op-row-last"><td class="op-kind op-kind-paid">Paid</td><td class="op-share" style="background:linear-gradient(90deg,rgba(46,158,79,0.24) 56.6%,transparent 56.6%)"><div class="op-pct">56.6%</div><div class="op-num">₩49,094,422</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(46,158,79,0.24) 58.1%,transparent 58.1%)"><div class="op-pct">58.1%</div><div class="op-num">₩42,410,160</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(46,158,79,0.24) 64.8%,transparent 64.8%)"><div class="op-pct">64.8%</div><div class="op-num">₩25,272,792</div></td></tr><tr><td rowspan="2" class="op-metric"><b>Actual</b></td><td class="op-kind op-kind-org">Organic</td><td class="op-share" style="background:linear-gradient(90deg,rgba(148,168,191,0.32) 51.2%,transparent 51.2%)"><div class="op-pct">51.2%</div><div class="op-num">₩58,177,598</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(148,168,191,0.32) 48.6%,transparent 48.6%)"><div class="op-pct">48.6%</div><div class="op-num">₩53,017,851</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(148,168,191,0.32) 50.0%,transparent 50.0%)"><div class="op-pct">50.0%</div><div class="op-num">₩41,017,753</div></td></tr><tr class="op-row-last"><td class="op-kind op-kind-paid">Paid</td><td class="op-share" style="background:linear-gradient(90deg,rgba(46,158,79,0.24) 48.8%,transparent 48.8%)"><div class="op-pct">48.8%</div><div class="op-num">₩55,501,633</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(46,158,79,0.24) 51.4%,transparent 51.4%)"><div class="op-pct">51.4%</div><div class="op-num">₩56,076,044</div></td><td class="op-share" style="background:linear-gradient(90deg,rgba(46,158,79,0.24) 50.0%,transparent 50.0%)"><div class="op-pct">50.0%</div><div class="op-num">₩40,976,543</div></td></tr></tbody></table></div></div><h3 style="margin:24px 0 6px;font-size:15px;">■ 최근 30일 DAU 추이  ·  연핑크=기존 유저  ·  노랑=신규 유저(NRU)</h3><div class="summary-grid"><div class="chart-wrap"><canvas id="dau-app-언더다크"></canvas></div><div class="card"><h3>● 최근 4주 주차별 DAU/NRU</h3><table class="mini-table"><thead><tr><th>주차 (월~일)</th><th>DAU 일평균</th><th>NRU 일평균</th></tr></thead><tbody><tr><td>6/1 ~ 6/7</td><td class="bar-cell" style="background:linear-gradient(90deg,#f3aabc 97.5%,transparent 97.5%)">14,042</td><td class="bar-cell" style="background:linear-gradient(90deg,#f8e49a 77.6%,transparent 77.6%)">1,242</td></tr><tr><td>6/8 ~ 6/14</td><td class="bar-cell" style="background:linear-gradient(90deg,#f3aabc 96.4%,transparent 96.4%)">13,886</td><td class="bar-cell" style="background:linear-gradient(90deg,#f8e49a 73.1%,transparent 73.1%)">1,171</td></tr><tr><td>6/15 ~ 6/21</td><td class="bar-cell" style="background:linear-gradient(90deg,#f3aabc 99.1%,transparent 99.1%)">14,279</td><td class="bar-cell" style="background:linear-gradient(90deg,#f8e49a 100.0%,transparent 100.0%)">1,601</td></tr><tr><td>6/22 ~ 6/28</td><td class="bar-cell" style="background:linear-gradient(90deg,#f3aabc 100.0%,transparent 100.0%)">14,405</td><td class="bar-cell" style="background:linear-gradient(90deg,#f8e49a 85.3%,transparent 85.3%)">1,365</td></tr></tbody></table><h3 style="margin-top:12px">● 월별 DAU/NRU (일평균)</h3><table class="mini-table"><thead><tr><th>월</th><th>DAU 일평균</th><th>NRU 일평균</th></tr></thead><tbody><tr><td>4월</td><td class="bar-cell" style="background:linear-gradient(90deg,#f3aabc 100.0%,transparent 100.0%)">17,476</td><td class="bar-cell" style="background:linear-gradient(90deg,#f8e49a 100.0%,transparent 100.0%)">1,843</td></tr><tr><td>5월</td><td class="bar-cell" style="background:linear-gradient(90deg,#f3aabc 92.2%,transparent 92.2%)">16,112</td><td class="bar-cell" style="background:linear-gradient(90deg,#f8e49a 90.5%,transparent 90.5%)">1,667</td></tr><tr><td>6월(~6/29)</td><td class="bar-cell" style="background:linear-gradient(90deg,#f3aabc 80.8%,transparent 80.8%)">14,127</td><td class="bar-cell" style="background:linear-gradient(90deg,#f8e49a 72.3%,transparent 72.3%)">1,333</td></tr></tbody></table></div></div><h3 style="margin:24px 0 6px;font-size:15px;">■ 최근 30일 매출 추이  ·  인앱 / 광고</h3><div class="summary-grid"><div class="chart-wrap"><canvas id="rev-app-언더다크"></canvas></div><div class="card"><h3>● 최근 4주 주차별 매출</h3><table class="mini-table"><thead><tr><th>주차 (월~일)</th><th>총매출</th><th>일평균</th></tr></thead><tbody><tr><td>6/1 ~ 6/7</td><td class="bar-cell" style="background:linear-gradient(90deg,#c5e6c0 100.0%,transparent 100.0%)">₩39,710,895</td><td class="bar-cell" style="background:linear-gradient(90deg,#c3d9f5 100.0%,transparent 100.0%)">₩5,672,985</td></tr><tr><td>6/8 ~ 6/14</td><td class="bar-cell" style="background:linear-gradient(90deg,#c5e6c0 81.6%,transparent 81.6%)">₩32,391,931</td><td class="bar-cell" style="background:linear-gradient(90deg,#c3d9f5 81.6%,transparent 81.6%)">₩4,627,419</td></tr><tr><td>6/15 ~ 6/21</td><td class="bar-cell" style="background:linear-gradient(90deg,#c5e6c0 79.5%,transparent 79.5%)">₩31,583,503</td><td class="bar-cell" style="background:linear-gradient(90deg,#c3d9f5 79.5%,transparent 79.5%)">₩4,511,929</td></tr><tr><td>6/22 ~ 6/28</td><td class="bar-cell" style="background:linear-gradient(90deg,#c5e6c0 77.1%,transparent 77.1%)">₩30,618,035</td><td class="bar-cell" style="background:linear-gradient(90deg,#c3d9f5 77.1%,transparent 77.1%)">₩4,374,005</td></tr></tbody></table><h3 style="margin-top:12px">● 월별 매출</h3><table class="mini-table"><thead><tr><th>월</th><th>총매출</th><th>일평균</th></tr></thead><tbody><tr><td>4월</td><td class="bar-cell" style="background:linear-gradient(90deg,#c5e6c0 100.0%,transparent 100.0%)">₩192,706,430</td><td class="bar-cell" style="background:linear-gradient(90deg,#c3d9f5 100.0%,transparent 100.0%)">₩6,423,548</td></tr><tr><td>5월</td><td class="bar-cell" style="background:linear-gradient(90deg,#c5e6c0 89.9%,transparent 89.9%)">₩173,332,784</td><td class="bar-cell" style="background:linear-gradient(90deg,#c3d9f5 87.0%,transparent 87.0%)">₩5,591,380</td></tr><tr><td>6월(~6/29)</td><td class="bar-cell" style="background:linear-gradient(90deg,#c5e6c0 71.8%,transparent 71.8%)">₩138,424,967</td><td class="bar-cell" style="background:linear-gradient(90deg,#c3d9f5 74.3%,transparent 74.3%)">₩4,773,275</td></tr></tbody></table></div></div><script id="data-app-언더다크" type="application/json">{"daily30": [{"date": "2026-06-01", "dau_aos": 8974.0, "dau_ios": 4657.0, "nru_aos": 863.0, "nru_ios": 430.0, "rev_iap_aos": 5021796.0, "rev_iap_ios": 2484532.0, "rev_aganim": 0, "rev_iaa_aos": 250994.0, "rev_iaa_ios": 118515.0}, {"date": "2026-06-02", "dau_aos": 9305.0, "dau_ios": 4781.0, "nru_aos": 907.0, "nru_ios": 375.0, "rev_iap_aos": 3247269.0, "rev_iap_ios": 1795667.0, "rev_aganim": 0, "rev_iaa_aos": 194225.0, "rev_iaa_ios": 118392.0}, {"date": "2026-06-03", "dau_aos": 9546.0, "dau_ios": 4744.0, "nru_aos": 935.0, "nru_ios": 358.0, "rev_iap_aos": 3034507.0, "rev_iap_ios": 1426858.0, "rev_aganim": 0, "rev_iaa_aos": 234241.0, "rev_iaa_ios": 150675.0}, {"date": "2026-06-04", "dau_aos": 9411.0, "dau_ios": 4736.0, "nru_aos": 817.0, "nru_ios": 386.0, "rev_iap_aos": 3726672.0, "rev_iap_ios": 2030342.0, "rev_aganim": 0, "rev_iaa_aos": 198850.0, "rev_iaa_ios": 112887.0}, {"date": "2026-06-05", "dau_aos": 9362.0, "dau_ios": 4756.0, "nru_aos": 763.0, "nru_ios": 355.0, "rev_iap_aos": 3051869.0, "rev_iap_ios": 1949921.0, "rev_aganim": 0, "rev_iaa_aos": 198349.0, "rev_iaa_ios": 115744.0}, {"date": "2026-06-06", "dau_aos": 9098.0, "dau_ios": 4806.0, "nru_aos": 813.0, "nru_ios": 384.0, "rev_iap_aos": 3411740.0, "rev_iap_ios": 1548674.0, "rev_aganim": 0, "rev_iaa_aos": 200982.0, "rev_iaa_ios": 124347.0}, {"date": "2026-06-07", "dau_aos": 9388.0, "dau_ios": 4729.0, "nru_aos": 962.0, "nru_ios": 349.0, "rev_iap_aos": 3328252.0, "rev_iap_ios": 1282325.0, "rev_aganim": 0, "rev_iaa_aos": 217186.0, "rev_iaa_ios": 135084.0}, {"date": "2026-06-08", "dau_aos": 9444.0, "dau_ios": 4724.0, "nru_aos": 887.0, "nru_ios": 338.0, "rev_iap_aos": 3277485.0, "rev_iap_ios": 2047461.0, "rev_aganim": 0, "rev_iaa_aos": 194593.0, "rev_iaa_ios": 92828.0}, {"date": "2026-06-09", "dau_aos": 9353.0, "dau_ios": 4655.0, "nru_aos": 803.0, "nru_ios": 314.0, "rev_iap_aos": 2576590.0, "rev_iap_ios": 1537123.0, "rev_aganim": 0, "rev_iaa_aos": 240722.0, "rev_iaa_ios": 87065.0}, {"date": "2026-06-10", "dau_aos": 9283.0, "dau_ios": 4632.0, "nru_aos": 769.0, "nru_ios": 312.0, "rev_iap_aos": 2443831.0, "rev_iap_ios": 1815198.0, "rev_aganim": 0, "rev_iaa_aos": 185699.0, "rev_iaa_ios": 106253.0}, {"date": "2026-06-11", "dau_aos": 9248.0, "dau_ios": 4592.0, "nru_aos": 747.0, "nru_ios": 297.0, "rev_iap_aos": 2761649.0, "rev_iap_ios": 1525684.0, "rev_aganim": 0, "rev_iaa_aos": 182865.0, "rev_iaa_ios": 87712.0}, {"date": "2026-06-12", "dau_aos": 9164.0, "dau_ios": 4525.0, "nru_aos": 785.0, "nru_ios": 319.0, "rev_iap_aos": 2410648.0, "rev_iap_ios": 1810957.0, "rev_aganim": 0, "rev_iaa_aos": 158913.0, "rev_iaa_ios": 93421.0}, {"date": "2026-06-13", "dau_aos": 9125.0, "dau_ios": 4568.0, "nru_aos": 879.0, "nru_ios": 353.0, "rev_iap_aos": 2173508.0, "rev_iap_ios": 1734634.0, "rev_aganim": 0, "rev_iaa_aos": 176031.0, "rev_iaa_ios": 141364.0}, {"date": "2026-06-14", "dau_aos": 9274.0, "dau_ios": 4614.0, "nru_aos": 977.0, "nru_ios": 419.0, "rev_iap_aos": 2739041.0, "rev_iap_ios": 1386496.0, "rev_aganim": 0, "rev_iaa_aos": 227011.0, "rev_iaa_ios": 177149.0}, {"date": "2026-06-15", "dau_aos": 9167.0, "dau_ios": 4746.0, "nru_aos": 838.0, "nru_ios": 416.0, "rev_iap_aos": 3228453.0, "rev_iap_ios": 1124715.0, "rev_aganim": 0, "rev_iaa_aos": 191374.0, "rev_iaa_ios": 134621.0}, {"date": "2026-06-16", "dau_aos": 9171.0, "dau_ios": 4627.0, "nru_aos": 828.0, "nru_ios": 339.0, "rev_iap_aos": 3661133.0, "rev_iap_ios": 1286378.0, "rev_aganim": 0, "rev_iaa_aos": 161599.0, "rev_iaa_ios": 96666.0}, {"date": "2026-06-17", "dau_aos": 9240.0, "dau_ios": 4627.0, "nru_aos": 898.0, "nru_ios": 381.0, "rev_iap_aos": 2450131.0, "rev_iap_ios": 1164124.0, "rev_aganim": 0, "rev_iaa_aos": 172285.0, "rev_iaa_ios": 112390.0}, {"date": "2026-06-18", "dau_aos": 9810.0, "dau_ios": 4489.0, "nru_aos": 1487.0, "nru_ios": 288.0, "rev_iap_aos": 2565223.0, "rev_iap_ios": 1382905.0, "rev_aganim": 0, "rev_iaa_aos": 142582.0, "rev_iaa_ios": 112927.0}, {"date": "2026-06-19", "dau_aos": 9992.0, "dau_ios": 4483.0, "nru_aos": 1515.0, "nru_ios": 276.0, "rev_iap_aos": 2847326.0, "rev_iap_ios": 1111828.0, "rev_aganim": 0, "rev_iaa_aos": 141071.0, "rev_iaa_ios": 98105.0}, {"date": "2026-06-20", "dau_aos": 10155.0, "dau_ios": 4538.0, "nru_aos": 1500.0, "nru_ios": 382.0, "rev_iap_aos": 2781705.0, "rev_iap_ios": 1435193.0, "rev_aganim": 0, "rev_iaa_aos": 188685.0, "rev_iaa_ios": 127107.0}, {"date": "2026-06-21", "dau_aos": 10378.0, "dau_ios": 4532.0, "nru_aos": 1681.0, "nru_ios": 378.0, "rev_iap_aos": 3210137.0, "rev_iap_ios": 1295283.0, "rev_aganim": 0, "rev_iaa_aos": 231793.0, "rev_iaa_ios": 127764.0}, {"date": "2026-06-22", "dau_aos": 10569.0, "dau_ios": 4611.0, "nru_aos": 1438.0, "nru_ios": 339.0, "rev_iap_aos": 2646349.0, "rev_iap_ios": 1692830.0, "rev_aganim": 0, "rev_iaa_aos": 186937.0, "rev_iaa_ios": 112319.0}, {"date": "2026-06-23", "dau_aos": 10508.0, "dau_ios": 4593.0, "nru_aos": 1476.0, "nru_ios": 327.0, "rev_iap_aos": 2640866.0, "rev_iap_ios": 1150779.0, "rev_aganim": 0, "rev_iaa_aos": 171260.0, "rev_iaa_ios": 121909.0}, {"date": "2026-06-24", "dau_aos": 9928.0, "dau_ios": 4618.0, "nru_aos": 969.0, "nru_ios": 408.0, "rev_iap_aos": 2243590.0, "rev_iap_ios": 1732493.0, "rev_aganim": 0, "rev_iaa_aos": 161633.0, "rev_iaa_ios": 97491.0}, {"date": "2026-06-25", "dau_aos": 9668.0, "dau_ios": 4581.0, "nru_aos": 812.0, "nru_ios": 348.0, "rev_iap_aos": 2789690.0, "rev_iap_ios": 1338882.0, "rev_aganim": 0, "rev_iaa_aos": 147162.0, "rev_iaa_ios": 107306.0}, {"date": "2026-06-26", "dau_aos": 9450.0, "dau_ios": 4592.0, "nru_aos": 716.0, "nru_ios": 383.0, "rev_iap_aos": 2387038.0, "rev_iap_ios": 1518327.0, "rev_aganim": 0, "rev_iaa_aos": 175077.0, "rev_iaa_ios": 169178.0}, {"date": "2026-06-27", "dau_aos": 9250.0, "dau_ios": 4727.0, "nru_aos": 732.0, "nru_ios": 430.0, "rev_iap_aos": 2826885.0, "rev_iap_ios": 1212850.0, "rev_aganim": 0, "rev_iaa_aos": 203924.0, "rev_iaa_ios": 144660.0}, {"date": "2026-06-28", "dau_aos": 9049.0, "dau_ios": 4692.0, "nru_aos": 709.0, "nru_ios": 465.0, "rev_iap_aos": 3143911.0, "rev_iap_ios": 1166925.0, "rev_aganim": 0, "rev_iaa_aos": 188772.0, "rev_iaa_ios": 138992.0}, {"date": "2026-06-29", "dau_aos": 8796.0, "dau_ios": 4609.0, "nru_aos": 656.0, "nru_ios": 355.0, "rev_iap_aos": 2636253.0, "rev_iap_ios": 1152833.0, "rev_aganim": 0, "rev_iaa_aos": 206961.0, "rev_iaa_ios": 124556.0}, {"date": "2026-06-30", "dau_aos": 0.0, "dau_ios": 0.0, "nru_aos": 0.0, "nru_ios": 0.0, "rev_iap_aos": 0.0, "rev_iap_ios": 0.0, "rev_aganim": 0.0, "rev_iaa_aos": 0.0, "rev_iaa_ios": 0.0}]}</script><h2 class="section-h media-section">■ 매체 성과 (월별 코호트)</h2><div class="subnote">캠페인 상세 대신 <b>매체 단위(매출/액션 캠페인 통합)</b>의 월별 설치 코호트 회수율입니다.<br>· 막대/표 = 해당 월 설치 코호트의 회수율(revN/cost) — AOS는 D90, iOS는 D30까지<br>· <b>채워진 막대</b> = 숙성 완료(관측 확정값)<br>· <b>빗금 막대</b> · ⏳ = 집계 진행 중(확정 전 — 최종값은 더 높아질 수 있음)<br>· <span style="color:#e05252">붉은 점선</span> = 손익분기 140%(스토어 수수료 포함) · <span style="color:#3aa14f">초록</span> = 손익분기 도달</div><div class="os-block"><div class="os-header">AOS</div><div class="os-body"><div class="group-block"><h4 class="group-title">AOS 전체 (매체 합산)</h4><div class="group-comment" contenteditable="true" data-edit-key="언더다크|AOS|전체 (매체 합산)|comment"></div><div class="cohort-strip"><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 28.5%"><span class="cohort-val">28</span><div class="cohort-bar" style="height:17.8%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 44.0%"><span class="cohort-val">44</span><div class="cohort-bar" style="height:27.5%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 58.7%"><span class="cohort-val">59</span><div class="cohort-bar" style="height:36.7%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 72.3%"><span class="cohort-val">72</span><div class="cohort-bar" style="height:45.2%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 79.0%"><span class="cohort-val">79</span><div class="cohort-bar" style="height:49.4%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 85.9%"><span class="cohort-val">86</span><div class="cohort-bar" style="height:53.7%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 95.1%"><span class="cohort-val">95</span><div class="cohort-bar" style="height:59.4%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 97.8% (미숙성 — 상승 여지)"><span class="cohort-val">98</span><div class="cohort-bar immature" style="height:61.1%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">4월</span><br>₩5019.0만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 28.4%"><span class="cohort-val">28</span><div class="cohort-bar" style="height:17.7%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 43.4%"><span class="cohort-val">43</span><div class="cohort-bar" style="height:27.2%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 57.7%"><span class="cohort-val">58</span><div class="cohort-bar" style="height:36.1%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 71.1%"><span class="cohort-val">71</span><div class="cohort-bar" style="height:44.4%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 77.7%"><span class="cohort-val">78</span><div class="cohort-bar" style="height:48.6%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 84.6%"><span class="cohort-val">85</span><div class="cohort-bar" style="height:52.8%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 92.1% (미숙성 — 상승 여지)"><span class="cohort-val">92</span><div class="cohort-bar immature" style="height:57.6%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 92.3% (미숙성 — 상승 여지)"><span class="cohort-val">92</span><div class="cohort-bar immature" style="height:57.7%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">5월</span><br>₩4596.4만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 27.2% (미숙성 — 상승 여지)"><span class="cohort-val">27</span><div class="cohort-bar immature" style="height:17.0%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 42.1% (미숙성 — 상승 여지)"><span class="cohort-val">42</span><div class="cohort-bar immature" style="height:26.3%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 58.2% (미숙성 — 상승 여지)"><span class="cohort-val">58</span><div class="cohort-bar immature" style="height:36.4%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 67.4% (미숙성 — 상승 여지)"><span class="cohort-val">67</span><div class="cohort-bar immature" style="height:42.1%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 69.7% (미숙성 — 상승 여지)"><span class="cohort-val">70</span><div class="cohort-bar immature" style="height:43.5%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 70.8% (미숙성 — 상승 여지)"><span class="cohort-val">71</span><div class="cohort-bar immature" style="height:44.3%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 70.8% (미숙성 — 상승 여지)"><span class="cohort-val">71</span><div class="cohort-bar immature" style="height:44.3%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 70.8% (미숙성 — 상승 여지)"><span class="cohort-val">71</span><div class="cohort-bar immature" style="height:44.3%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">6월</span><br>₩3568.6만</div></div></div><div class="perf-wrap"><table class="cohort-mtable"><thead><tr><th>월 코호트</th><th>Cost</th><th>Installs</th><th>eCPI</th><th>ROI ACTUAL</th><th>ROI LTV</th><th>D1</th><th>D3</th><th>D7</th><th>D14</th><th>D21</th><th>D30</th><th>D60</th><th>D90</th></tr></thead><tbody><tr><td class="cm-label">4월</td><td class="cm-cost">₩50,190,037</td><td>9,890</td><td>₩5,075</td><td>109%</td><td>98%</td><td title="관측 확정값">28%</td><td title="관측 확정값">44%</td><td title="관측 확정값">59%</td><td title="관측 확정값">72%</td><td title="관측 확정값">79%</td><td title="관측 확정값">86%</td><td title="관측 확정값">95%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">98%<span class="cm-pending">⏳</span></td></tr><tr><td class="cm-label">5월</td><td class="cm-cost">₩45,963,754</td><td>9,394</td><td>₩4,893</td><td>120%</td><td>92%</td><td title="관측 확정값">28%</td><td title="관측 확정값">43%</td><td title="관측 확정값">58%</td><td title="관측 확정값">71%</td><td title="관측 확정값">78%</td><td title="관측 확정값">85%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">92%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">92%<span class="cm-pending">⏳</span></td></tr><tr class="cm-target"><td class="cm-label">6월</td><td class="cm-cost">₩35,686,488</td><td>12,708</td><td>₩2,808</td><td>111%</td><td>71%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">27%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">42%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">58%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">67%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">70%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">71%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">71%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">71%<span class="cm-pending">⏳</span></td></tr></tbody></table></div></div><div class="media-grid"><div class="group-block"><h4 class="group-title">AOS-Meta</h4><div class="cohort-strip"><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 31.9%"><span class="cohort-val">32</span><div class="cohort-bar" style="height:20.0%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 49.3%"><span class="cohort-val">49</span><div class="cohort-bar" style="height:30.8%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 65.6%"><span class="cohort-val">66</span><div class="cohort-bar" style="height:41.0%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 79.3%"><span class="cohort-val">79</span><div class="cohort-bar" style="height:49.5%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 83.4%"><span class="cohort-val">83</span><div class="cohort-bar" style="height:52.1%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 87.7%"><span class="cohort-val">88</span><div class="cohort-bar" style="height:54.8%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 93.2%"><span class="cohort-val">93</span><div class="cohort-bar" style="height:58.2%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 93.6% (미숙성 — 상승 여지)"><span class="cohort-val">94</span><div class="cohort-bar immature" style="height:58.5%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">4월</span><br>₩1434.3만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 23.9%"><span class="cohort-val">24</span><div class="cohort-bar" style="height:14.9%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 33.6%"><span class="cohort-val">34</span><div class="cohort-bar" style="height:21.0%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 43.9%"><span class="cohort-val">44</span><div class="cohort-bar" style="height:27.4%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 58.5%"><span class="cohort-val">59</span><div class="cohort-bar" style="height:36.6%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 64.7%"><span class="cohort-val">65</span><div class="cohort-bar" style="height:40.4%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 71.8%"><span class="cohort-val">72</span><div class="cohort-bar" style="height:44.9%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 79.4% (미숙성 — 상승 여지)"><span class="cohort-val">79</span><div class="cohort-bar immature" style="height:49.6%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 79.4% (미숙성 — 상승 여지)"><span class="cohort-val">79</span><div class="cohort-bar immature" style="height:49.6%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">5월</span><br>₩1237.0만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 25.7% (미숙성 — 상승 여지)"><span class="cohort-val">26</span><div class="cohort-bar immature" style="height:16.1%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 42.2% (미숙성 — 상승 여지)"><span class="cohort-val">42</span><div class="cohort-bar immature" style="height:26.3%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 56.9% (미숙성 — 상승 여지)"><span class="cohort-val">57</span><div class="cohort-bar immature" style="height:35.5%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 65.0% (미숙성 — 상승 여지)"><span class="cohort-val">65</span><div class="cohort-bar immature" style="height:40.6%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 68.6% (미숙성 — 상승 여지)"><span class="cohort-val">69</span><div class="cohort-bar immature" style="height:42.9%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 69.8% (미숙성 — 상승 여지)"><span class="cohort-val">70</span><div class="cohort-bar immature" style="height:43.6%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 69.8% (미숙성 — 상승 여지)"><span class="cohort-val">70</span><div class="cohort-bar immature" style="height:43.6%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 69.8% (미숙성 — 상승 여지)"><span class="cohort-val">70</span><div class="cohort-bar immature" style="height:43.6%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">6월</span><br>₩1004.6만</div></div></div><div class="perf-wrap"><table class="cohort-mtable"><thead><tr><th>월 코호트</th><th>Cost</th><th>Installs</th><th>eCPI</th><th>ROI ACTUAL</th><th>ROI LTV</th><th>D1</th><th>D3</th><th>D7</th><th>D14</th><th>D21</th><th>D30</th><th>D60</th><th>D90</th></tr></thead><tbody><tr><td class="cm-label">4월</td><td class="cm-cost">₩14,342,879</td><td>3,376</td><td>₩4,248</td><td>99%</td><td>94%</td><td title="관측 확정값">32%</td><td title="관측 확정값">49%</td><td title="관측 확정값">66%</td><td title="관측 확정값">79%</td><td title="관측 확정값">83%</td><td title="관측 확정값">88%</td><td title="관측 확정값">93%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">94%<span class="cm-pending">⏳</span></td></tr><tr><td class="cm-label">5월</td><td class="cm-cost">₩12,369,753</td><td>2,823</td><td>₩4,382</td><td>81%</td><td>79%</td><td title="관측 확정값">24%</td><td title="관측 확정값">34%</td><td title="관측 확정값">44%</td><td title="관측 확정값">59%</td><td title="관측 확정값">65%</td><td title="관측 확정값">72%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">79%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">79%<span class="cm-pending">⏳</span></td></tr><tr class="cm-target"><td class="cm-label">6월</td><td class="cm-cost">₩10,045,913</td><td>5,178</td><td>₩1,940</td><td>88%</td><td>70%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">26%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">42%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">57%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">65%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">69%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">70%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">70%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">70%<span class="cm-pending">⏳</span></td></tr></tbody></table></div></div><div class="group-block"><h4 class="group-title">AOS-Google Ads</h4><div class="cohort-strip"><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 25.5%"><span class="cohort-val">25</span><div class="cohort-bar" style="height:15.9%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 39.7%"><span class="cohort-val">40</span><div class="cohort-bar" style="height:24.8%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 53.7%"><span class="cohort-val">54</span><div class="cohort-bar" style="height:33.5%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 66.8%"><span class="cohort-val">67</span><div class="cohort-bar" style="height:41.8%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 74.5%"><span class="cohort-val">75</span><div class="cohort-bar" style="height:46.6%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 82.7%"><span class="cohort-val">83</span><div class="cohort-bar" style="height:51.7%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 93.6%"><span class="cohort-val">94</span><div class="cohort-bar" style="height:58.5%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 97.3% (미숙성 — 상승 여지)"><span class="cohort-val">97</span><div class="cohort-bar immature" style="height:60.8%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">4월</span><br>₩3437.1만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 28.0%"><span class="cohort-val">28</span><div class="cohort-bar" style="height:17.5%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 44.3%"><span class="cohort-val">44</span><div class="cohort-bar" style="height:27.7%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 58.9%"><span class="cohort-val">59</span><div class="cohort-bar" style="height:36.8%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 70.3%"><span class="cohort-val">70</span><div class="cohort-bar" style="height:44.0%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 77.0%"><span class="cohort-val">77</span><div class="cohort-bar" style="height:48.1%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 83.6%"><span class="cohort-val">84</span><div class="cohort-bar" style="height:52.3%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 91.2% (미숙성 — 상승 여지)"><span class="cohort-val">91</span><div class="cohort-bar immature" style="height:57.0%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 91.4% (미숙성 — 상승 여지)"><span class="cohort-val">91</span><div class="cohort-bar immature" style="height:57.1%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">5월</span><br>₩3220.2만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 27.2% (미숙성 — 상승 여지)"><span class="cohort-val">27</span><div class="cohort-bar immature" style="height:17.0%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 41.2% (미숙성 — 상승 여지)"><span class="cohort-val">41</span><div class="cohort-bar immature" style="height:25.7%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 57.8% (미숙성 — 상승 여지)"><span class="cohort-val">58</span><div class="cohort-bar immature" style="height:36.2%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 67.5% (미숙성 — 상승 여지)"><span class="cohort-val">67</span><div class="cohort-bar immature" style="height:42.2%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 69.2% (미숙성 — 상승 여지)"><span class="cohort-val">69</span><div class="cohort-bar immature" style="height:43.2%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 70.4% (미숙성 — 상승 여지)"><span class="cohort-val">70</span><div class="cohort-bar immature" style="height:44.0%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 70.4% (미숙성 — 상승 여지)"><span class="cohort-val">70</span><div class="cohort-bar immature" style="height:44.0%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 70.4% (미숙성 — 상승 여지)"><span class="cohort-val">70</span><div class="cohort-bar immature" style="height:44.0%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">6월</span><br>₩2485.0만</div></div></div><div class="perf-wrap"><table class="cohort-mtable"><thead><tr><th>월 코호트</th><th>Cost</th><th>Installs</th><th>eCPI</th><th>ROI ACTUAL</th><th>ROI LTV</th><th>D1</th><th>D3</th><th>D7</th><th>D14</th><th>D21</th><th>D30</th><th>D60</th><th>D90</th></tr></thead><tbody><tr><td class="cm-label">4월</td><td class="cm-cost">₩34,371,312</td><td>5,668</td><td>₩6,064</td><td>108%</td><td>97%</td><td title="관측 확정값">25%</td><td title="관측 확정값">40%</td><td title="관측 확정값">54%</td><td title="관측 확정값">67%</td><td title="관측 확정값">75%</td><td title="관측 확정값">83%</td><td title="관측 확정값">94%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">97%<span class="cm-pending">⏳</span></td></tr><tr><td class="cm-label">5월</td><td class="cm-cost">₩32,202,089</td><td>5,865</td><td>₩5,491</td><td>130%</td><td>91%</td><td title="관측 확정값">28%</td><td title="관측 확정값">44%</td><td title="관측 확정값">59%</td><td title="관측 확정값">70%</td><td title="관측 확정값">77%</td><td title="관측 확정값">84%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">91%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">91%<span class="cm-pending">⏳</span></td></tr><tr class="cm-target"><td class="cm-label">6월</td><td class="cm-cost">₩24,850,256</td><td>7,194</td><td>₩3,454</td><td>118%</td><td>70%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">27%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">41%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">58%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">67%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">69%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">70%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">70%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">70%<span class="cm-pending">⏳</span></td></tr></tbody></table></div></div><div class="group-block"><h4 class="group-title">AOS-Appier</h4><div class="cohort-strip"><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:61.8%"></div><div class="cohort-bar-col" title="D1: 64.9%"><span class="cohort-val">65</span><div class="cohort-bar" style="height:28.6%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 93.5%"><span class="cohort-val">93</span><div class="cohort-bar" style="height:41.2%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 107.8%"><span class="cohort-val">108</span><div class="cohort-bar" style="height:47.6%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 133.0%"><span class="cohort-val">133</span><div class="cohort-bar" style="height:58.7%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 140.0%"><span class="cohort-val">140</span><div class="cohort-bar over-be" style="height:61.8%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 142.3%"><span class="cohort-val">142</span><div class="cohort-bar over-be" style="height:62.8%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 149.5%"><span class="cohort-val">150</span><div class="cohort-bar over-be" style="height:66.0%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 151.5% (미숙성 — 상승 여지)"><span class="cohort-val">152</span><div class="cohort-bar immature over-be" style="height:66.8%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">4월</span><br>₩147.6만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:61.8%"></div><div class="cohort-bar-col" title="D1: 76.1%"><span class="cohort-val">76</span><div class="cohort-bar" style="height:33.6%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 110.6%"><span class="cohort-val">111</span><div class="cohort-bar" style="height:48.8%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 153.2%"><span class="cohort-val">153</span><div class="cohort-bar over-be" style="height:67.6%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 200.4%"><span class="cohort-val">200</span><div class="cohort-bar over-be" style="height:88.4%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 210.6%"><span class="cohort-val">211</span><div class="cohort-bar over-be" style="height:92.9%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 218.9%"><span class="cohort-val">219</span><div class="cohort-bar over-be" style="height:96.6%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 226.7% (미숙성 — 상승 여지)"><span class="cohort-val">227</span><div class="cohort-bar immature over-be" style="height:100.0%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 226.7% (미숙성 — 상승 여지)"><span class="cohort-val">227</span><div class="cohort-bar immature over-be" style="height:100.0%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">5월</span><br>₩139.2만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:61.8%"></div><div class="cohort-bar-col" title="D1: 46.7%"><span class="cohort-val">47</span><div class="cohort-bar" style="height:20.6%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 70.8%"><span class="cohort-val">71</span><div class="cohort-bar" style="height:31.2%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 85.4% (미숙성 — 상승 여지)"><span class="cohort-val">85</span><div class="cohort-bar immature" style="height:37.7%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 97.0% (미숙성 — 상승 여지)"><span class="cohort-val">97</span><div class="cohort-bar immature" style="height:42.8%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 97.8% (미숙성 — 상승 여지)"><span class="cohort-val">98</span><div class="cohort-bar immature" style="height:43.2%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 98.3% (미숙성 — 상승 여지)"><span class="cohort-val">98</span><div class="cohort-bar immature" style="height:43.4%"></div><span class="cohort-dlabel">D30</span></div><div class="cohort-bar-col" title="D60: 98.3% (미숙성 — 상승 여지)"><span class="cohort-val">98</span><div class="cohort-bar immature" style="height:43.4%"></div><span class="cohort-dlabel">D60</span></div><div class="cohort-bar-col" title="D90: 98.3% (미숙성 — 상승 여지)"><span class="cohort-val">98</span><div class="cohort-bar immature" style="height:43.4%"></div><span class="cohort-dlabel">D90</span></div></div><div class="cohort-wlabel"><span class="cw-range">6월(~6/24)</span><br>₩79.0만</div></div></div><div class="perf-wrap"><table class="cohort-mtable"><thead><tr><th>월 코호트</th><th>Cost</th><th>Installs</th><th>eCPI</th><th>ROI ACTUAL</th><th>ROI LTV</th><th>D1</th><th>D3</th><th>D7</th><th>D14</th><th>D21</th><th>D30</th><th>D60</th><th>D90</th></tr></thead><tbody><tr><td class="cm-label">4월</td><td class="cm-cost">₩1,475,847</td><td>846</td><td>₩1,744</td><td class="cm-over">211%</td><td class="cm-over">152%</td><td title="관측 확정값">65%</td><td title="관측 확정값">93%</td><td title="관측 확정값">108%</td><td title="관측 확정값">133%</td><td class="cm-over" title="관측 확정값">140%</td><td class="cm-over" title="관측 확정값">142%</td><td class="cm-over" title="관측 확정값">150%</td><td class="cm-immature cm-over" title="집계 진행 중 — 아직 확정 전 값">152%<span class="cm-pending">⏳</span></td></tr><tr><td class="cm-label">5월</td><td class="cm-cost">₩1,391,912</td><td>706</td><td>₩1,972</td><td class="cm-over">254%</td><td class="cm-over">227%</td><td title="관측 확정값">76%</td><td title="관측 확정값">111%</td><td class="cm-over" title="관측 확정값">153%</td><td class="cm-over" title="관측 확정값">200%</td><td class="cm-over" title="관측 확정값">211%</td><td class="cm-over" title="관측 확정값">219%</td><td class="cm-immature cm-over" title="집계 진행 중 — 아직 확정 전 값">227%<span class="cm-pending">⏳</span></td><td class="cm-immature cm-over" title="집계 진행 중 — 아직 확정 전 값">227%<span class="cm-pending">⏳</span></td></tr><tr class="cm-target"><td class="cm-label">6월(~6/24)</td><td class="cm-cost">₩790,320</td><td>336</td><td>₩2,352</td><td class="cm-over">187%</td><td>98%</td><td title="관측 확정값">47%</td><td title="관측 확정값">71%</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">85%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">97%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">98%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">98%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">98%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">98%<span class="cm-pending">⏳</span></td></tr></tbody></table></div></div></div></div></div><div class="os-block"><div class="os-header">iOS</div><div class="os-body"><div class="group-block"><h4 class="group-title">iOS 전체 (매체 합산)</h4><div class="group-comment" contenteditable="true" data-edit-key="언더다크|iOS|전체 (매체 합산)|comment"></div><div class="cohort-strip"><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 40.9%"><span class="cohort-val">41</span><div class="cohort-bar" style="height:25.6%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 57.6%"><span class="cohort-val">58</span><div class="cohort-bar" style="height:36.0%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 68.6%"><span class="cohort-val">69</span><div class="cohort-bar" style="height:42.8%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 78.8%"><span class="cohort-val">79</span><div class="cohort-bar" style="height:49.3%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 84.7%"><span class="cohort-val">85</span><div class="cohort-bar" style="height:52.9%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 88.2%"><span class="cohort-val">88</span><div class="cohort-bar" style="height:55.1%"></div><span class="cohort-dlabel">D30</span></div></div><div class="cohort-wlabel"><span class="cw-range">4월</span><br>₩2040.8만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 27.7%"><span class="cohort-val">28</span><div class="cohort-bar" style="height:17.3%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 42.8%"><span class="cohort-val">43</span><div class="cohort-bar" style="height:26.7%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 61.2%"><span class="cohort-val">61</span><div class="cohort-bar" style="height:38.2%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 73.9%"><span class="cohort-val">74</span><div class="cohort-bar" style="height:46.2%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 78.7%"><span class="cohort-val">79</span><div class="cohort-bar" style="height:49.2%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 81.7%"><span class="cohort-val">82</span><div class="cohort-bar" style="height:51.1%"></div><span class="cohort-dlabel">D30</span></div></div><div class="cohort-wlabel"><span class="cw-range">5월</span><br>₩1122.2만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 43.7% (미숙성 — 상승 여지)"><span class="cohort-val">44</span><div class="cohort-bar immature" style="height:27.3%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 66.8% (미숙성 — 상승 여지)"><span class="cohort-val">67</span><div class="cohort-bar immature" style="height:41.7%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 85.7% (미숙성 — 상승 여지)"><span class="cohort-val">86</span><div class="cohort-bar immature" style="height:53.6%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 95.5% (미숙성 — 상승 여지)"><span class="cohort-val">96</span><div class="cohort-bar immature" style="height:59.7%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 96.1% (미숙성 — 상승 여지)"><span class="cohort-val">96</span><div class="cohort-bar immature" style="height:60.1%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 96.6% (미숙성 — 상승 여지)"><span class="cohort-val">97</span><div class="cohort-bar immature" style="height:60.4%"></div><span class="cohort-dlabel">D30</span></div></div><div class="cohort-wlabel"><span class="cw-range">6월</span><br>₩937.9만</div></div></div><div class="perf-wrap"><table class="cohort-mtable"><thead><tr><th>월 코호트</th><th>Cost</th><th>Installs</th><th>eCPI</th><th>D1</th><th>D3</th><th>D7</th><th>D14</th><th>D21</th><th>D30</th></tr></thead><tbody><tr><td class="cm-label">4월</td><td class="cm-cost">₩20,408,222</td><td>3,053</td><td>₩6,685</td><td title="관측 확정값">41%</td><td title="관측 확정값">58%</td><td title="관측 확정값">69%</td><td title="관측 확정값">79%</td><td title="관측 확정값">85%</td><td title="관측 확정값">88%</td></tr><tr><td class="cm-label">5월</td><td class="cm-cost">₩11,222,016</td><td>3,224</td><td>₩3,481</td><td title="관측 확정값">28%</td><td title="관측 확정값">43%</td><td title="관측 확정값">61%</td><td title="관측 확정값">74%</td><td title="관측 확정값">79%</td><td title="관측 확정값">82%</td></tr><tr class="cm-target"><td class="cm-label">6월</td><td class="cm-cost">₩9,379,074</td><td>1,361</td><td>₩6,891</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">44%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">67%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">86%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">96%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">96%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">97%<span class="cm-pending">⏳</span></td></tr></tbody></table></div></div><div class="media-grid"><div class="group-block"><h4 class="group-title">iOS-Meta</h4><div class="cohort-strip"><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 56.7%"><span class="cohort-val">57</span><div class="cohort-bar" style="height:35.5%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 77.2%"><span class="cohort-val">77</span><div class="cohort-bar" style="height:48.3%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 89.2%"><span class="cohort-val">89</span><div class="cohort-bar" style="height:55.7%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 97.8%"><span class="cohort-val">98</span><div class="cohort-bar" style="height:61.1%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 102.6%"><span class="cohort-val">103</span><div class="cohort-bar" style="height:64.1%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 105.9%"><span class="cohort-val">106</span><div class="cohort-bar" style="height:66.2%"></div><span class="cohort-dlabel">D30</span></div></div><div class="cohort-wlabel"><span class="cw-range">4월</span><br>₩1205.5만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 27.7%"><span class="cohort-val">28</span><div class="cohort-bar" style="height:17.3%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 42.8%"><span class="cohort-val">43</span><div class="cohort-bar" style="height:26.7%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 61.2%"><span class="cohort-val">61</span><div class="cohort-bar" style="height:38.2%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 73.9%"><span class="cohort-val">74</span><div class="cohort-bar" style="height:46.2%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 78.7%"><span class="cohort-val">79</span><div class="cohort-bar" style="height:49.2%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 81.7%"><span class="cohort-val">82</span><div class="cohort-bar" style="height:51.1%"></div><span class="cohort-dlabel">D30</span></div></div><div class="cohort-wlabel"><span class="cw-range">5월</span><br>₩1122.2만</div></div><div class="cohort-week"><div class="cohort-bars"><div class="cohort-be-line" style="bottom:87.5%"></div><div class="cohort-bar-col" title="D1: 43.7% (미숙성 — 상승 여지)"><span class="cohort-val">44</span><div class="cohort-bar immature" style="height:27.3%"></div><span class="cohort-dlabel">D1</span></div><div class="cohort-bar-col" title="D3: 66.8% (미숙성 — 상승 여지)"><span class="cohort-val">67</span><div class="cohort-bar immature" style="height:41.7%"></div><span class="cohort-dlabel">D3</span></div><div class="cohort-bar-col" title="D7: 85.7% (미숙성 — 상승 여지)"><span class="cohort-val">86</span><div class="cohort-bar immature" style="height:53.6%"></div><span class="cohort-dlabel">D7</span></div><div class="cohort-bar-col" title="D14: 95.5% (미숙성 — 상승 여지)"><span class="cohort-val">96</span><div class="cohort-bar immature" style="height:59.7%"></div><span class="cohort-dlabel">D14</span></div><div class="cohort-bar-col" title="D21: 96.1% (미숙성 — 상승 여지)"><span class="cohort-val">96</span><div class="cohort-bar immature" style="height:60.1%"></div><span class="cohort-dlabel">D21</span></div><div class="cohort-bar-col" title="D30: 96.6% (미숙성 — 상승 여지)"><span class="cohort-val">97</span><div class="cohort-bar immature" style="height:60.4%"></div><span class="cohort-dlabel">D30</span></div></div><div class="cohort-wlabel"><span class="cw-range">6월</span><br>₩937.9만</div></div></div><div class="perf-wrap"><table class="cohort-mtable"><thead><tr><th>월 코호트</th><th>Cost</th><th>Installs</th><th>eCPI</th><th>D1</th><th>D3</th><th>D7</th><th>D14</th><th>D21</th><th>D30</th></tr></thead><tbody><tr><td class="cm-label">4월</td><td class="cm-cost">₩12,054,650</td><td>1,069</td><td>₩11,277</td><td title="관측 확정값">57%</td><td title="관측 확정값">77%</td><td title="관측 확정값">89%</td><td title="관측 확정값">98%</td><td title="관측 확정값">103%</td><td title="관측 확정값">106%</td></tr><tr><td class="cm-label">5월</td><td class="cm-cost">₩11,222,016</td><td>3,223</td><td>₩3,482</td><td title="관측 확정값">28%</td><td title="관측 확정값">43%</td><td title="관측 확정값">61%</td><td title="관측 확정값">74%</td><td title="관측 확정값">79%</td><td title="관측 확정값">82%</td></tr><tr class="cm-target"><td class="cm-label">6월</td><td class="cm-cost">₩9,379,074</td><td>1,361</td><td>₩6,891</td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">44%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">67%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">86%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">96%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">96%<span class="cm-pending">⏳</span></td><td class="cm-immature" title="집계 진행 중 — 아직 확정 전 값">97%<span class="cm-pending">⏳</span></td></tr></tbody></table></div></div></div></div></div></section></div><script>
+(function () {
+  // 보고서별 독립 storage namespace — 파일명(확장자 제외) 기반으로 키 고유화.
+  // 동일 도메인(github.io)에 여러 회차 HTML 이 공존해도 각자의 편집이 섞이지 않음.
+  const REPORT_ID = (function () {
+    var p = (location.pathname || '').split('/').pop() || '';
+    p = decodeURIComponent(p).replace(/\.html?$/i, '');
+    return p || 'default';
+  })();
+  const STORAGE_KEY = 'weekly-report-edits-v1::' + REPORT_ID;
+  const IMAGE_KEY   = 'weekly-report-images-v1::' + REPORT_ID;
+
+  // ===== IndexedDB fallback (localStorage 5MB 한도 초과 회피) =====
+  const IDB_NAME = 'weekly-report-storage';
+  const IDB_STORE = 'kv';
+  let _idbDbPromise = null;
+  function _idb() {
+    if (_idbDbPromise) return _idbDbPromise;
+    _idbDbPromise = new Promise(function (resolve, reject) {
+      try {
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = function () { req.result.createObjectStore(IDB_STORE); };
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      } catch (e) { reject(e); }
+    });
+    return _idbDbPromise;
+  }
+  function idbGet(key) {
+    return _idb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const req = tx.objectStore(IDB_STORE).get(key);
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+    });
+  }
+  function idbSet(key, val) {
+    return _idb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(val, key);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    });
+  }
+  function idbDel(key) {
+    return _idb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).delete(key);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    });
+  }
+
+  // 메모리 캐시 — 첫 호출 후 같은 객체 반환 (동기 API 유지)
+  let _editsMem = null;
+  let _imagesMem = null;
+
+  function loadEdits() {
+    if (_editsMem !== null) return _editsMem;
+    try { _editsMem = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch (e) { _editsMem = {}; }
+    // IndexedDB 에 더 새로운 데이터가 있으면 비동기 merge
+    idbGet(STORAGE_KEY).then(function (obj) {
+      if (!obj || typeof obj !== 'object') return;
+      let added = 0;
+      for (const k in obj) { if (!(k in _editsMem)) { _editsMem[k] = obj[k]; added++; } }
+      if (added > 0) {
+        document.querySelectorAll('[data-edit-key]').forEach(function (el) {
+          const k = el.getAttribute('data-edit-key');
+          if (_editsMem[k] != null && _editsMem[k] !== '' && !el.textContent.trim() && !el.querySelector('img')) {
+            const isRich = el.classList.contains('group-attachments') || el.classList.contains('action-attachments')
+                        || el.classList.contains('group-comment') || el.classList.contains('action-comment');
+            if (isRich) el.innerHTML = _editsMem[k];
+            else el.textContent = _editsMem[k];
+          }
+        });
+      }
+    }).catch(function () {});
+    return _editsMem;
+  }
+  function saveEdits(o) {
+    _editsMem = o;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(o));
+    } catch (e) {
+      // localStorage 한도 초과 → IndexedDB 백그라운드 저장 (사용자에게는 성공으로 보임)
+      idbSet(STORAGE_KEY, o).catch(function (e2) {
+        console.error('[idb] STORAGE 저장 실패', e2);
+        alert('편집 저장 실패: ' + (e2 && e2.message || e2) + '\n\n브라우저 콘솔(F12)에서 자세한 오류 확인.');
+      });
+    }
+  }
+  function loadImages() {
+    if (_imagesMem !== null) return _imagesMem;
+    try { _imagesMem = JSON.parse(localStorage.getItem(IMAGE_KEY) || '{}'); }
+    catch (e) { _imagesMem = {}; }
+    // IndexedDB 비동기 merge — DOM 갱신
+    idbGet(IMAGE_KEY).then(function (obj) {
+      if (!obj || typeof obj !== 'object') return;
+      let added = 0;
+      for (const k in obj) { if (!(k in _imagesMem)) { _imagesMem[k] = obj[k]; added++; } }
+      if (added > 0) {
+        document.querySelectorAll('.budget-image-area').forEach(function (area) {
+          const k = area.getAttribute('data-image-key');
+          if (_imagesMem[k] && !area.classList.contains('has-image')) {
+            showBudgetImage(area, _imagesMem[k]);
+          }
+        });
+      }
+    }).catch(function () {});
+    return _imagesMem;
+  }
+  function saveImages(o) {
+    _imagesMem = o;
+    try {
+      localStorage.setItem(IMAGE_KEY, JSON.stringify(o));
+      return true;
+    } catch (e) {
+      // localStorage 한도 초과 → IndexedDB 백그라운드 저장
+      idbSet(IMAGE_KEY, o).catch(function (e2) {
+        console.error('[idb] IMAGE 저장 실패', e2);
+        alert('이미지 저장 실패: ' + (e2 && e2.message || e2) + '\n\n브라우저 콘솔(F12)에서 자세한 오류 확인.');
+      });
+      return true;  // IndexedDB 가 백그라운드에서 처리하니 사용자엔 성공으로 표시
+    }
+  }
+  const edits = loadEdits();
+
+  // ===== 마이그레이션 — 이전 버전에서 group-comment/action-comment 에 paste 된 이미지를 attachments 로 이동 =====
+  (function () {
+    let migrated = false;
+    Object.keys(edits).forEach(function (k) {
+      const v = edits[k];
+      if (typeof v !== 'string' || v.indexOf('<img') === -1) return;
+      let attKey = null;
+      if (k.endsWith('|comment')) attKey = k.replace(/\|comment$/, '|attachments');
+      else if (k.indexOf('action|') === 0) attKey = 'action-att|' + k.slice('action|'.length);
+      else return;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = v;
+      const imgs = tmp.querySelectorAll('img');
+      if (!imgs.length) return;
+      const attHtml = Array.from(imgs).map(function (img) { return img.outerHTML; }).join('');
+      const txt = tmp.textContent.trim();
+      // 기존 attachments 가 있으면 합침
+      edits[attKey] = (edits[attKey] || '') + attHtml;
+      if (txt) edits[k] = txt;
+      else delete edits[k];
+      migrated = true;
+    });
+    if (migrated) {
+      try { saveEdits(edits); } catch (e) {}
+      console.log('[migration] 이전 코멘트의 이미지를 첨부 영역으로 이동 완료');
+    }
+  })();
+
+  // ===== 코멘트 칸에 이미지 paste/drop 삽입 (가로 800px 로 자동 리사이즈, JPEG 변환) =====
+  function insertImageDataUrl(el, dataUrl) {
+    // 현재 커서 위치 또는 끝에 <img> 삽입
+    el.focus();
+    const imgEl = document.createElement('img');
+    imgEl.src = dataUrl;
+    imgEl.className = 'inline-img';
+    let sel = window.getSelection();
+    let range;
+    if (sel && sel.rangeCount && el.contains(sel.anchorNode)) {
+      range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(imgEl);
+      range.setStartAfter(imgEl);
+      range.collapse(true);
+      sel.removeAllRanges(); sel.addRange(range);
+    } else {
+      el.appendChild(imgEl);
+    }
+    // 저장 트리거
+    el.dispatchEvent(new Event('blur'));
+  }
+  // 이미지 캔버스 리사이즈 + JPEG 인코딩. 폭/품질 가변 — 용량 초과 시 자동 다운그레이드 재시도용.
+  function _canvasToDataUrl(img, maxW, quality) {
+    const scale = Math.min(1, maxW / img.width);
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+  function fileToResizedDataUrl(file, cb) {
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      const img = new Image();
+      img.onload = function () {
+        // 1200px / 품질 0.75 — 가로 100% 표시 시 가독성 충분, 한 장 ~80-150KB.
+        cb(_canvasToDataUrl(img, 1200, 0.75), img);
+      };
+      img.onerror = function () { cb(null, null); };
+      img.src = ev.target.result;
+    };
+    reader.onerror = function () { cb(null, null); };
+    reader.readAsDataURL(file);
+  }
+  // 저장 용량 초과 시 attachments 안의 모든 이미지를 더 강하게 다운그레이드 (800px/0.55)
+  async function _downgradeAllImages() {
+    const imgs = document.querySelectorAll('.group-attachments img.inline-img, .action-attachments img.inline-img');
+    if (!imgs.length) return false;
+    for (let i = 0; i < imgs.length; i++) {
+      const im = imgs[i];
+      const src = im.getAttribute('src') || '';
+      if (src.indexOf('data:') !== 0) continue;
+      // 이미 너무 작은 dataURL 은 스킵 (대략 50KB 미만)
+      if (src.length < 70_000) continue;
+      try {
+        const newImg = await new Promise(function (resolve, reject) {
+          const x = new Image();
+          x.onload = function () { resolve(x); };
+          x.onerror = reject;
+          x.src = src;
+        });
+        const newSrc = _canvasToDataUrl(newImg, 800, 0.55);
+        im.setAttribute('src', newSrc);
+      } catch (e) { /* skip */ }
+    }
+    // 부모 attachments 모두 재저장 트리거
+    document.querySelectorAll('.group-attachments[data-edit-key], .action-attachments[data-edit-key]').forEach(function (el) {
+      el.dispatchEvent(new Event('blur'));
+    });
+    return true;
+  }
+  // 이미지 클릭 = 크기 4단계 토글 (small → medium → full → orig → ...)
+  const SIZE_CYCLE = ['size-medium', 'size-full', 'size-orig', 'size-small'];
+  function cycleImageSize(img) {
+    let cur = -1;
+    for (let i = 0; i < SIZE_CYCLE.length; i++) {
+      if (img.classList.contains(SIZE_CYCLE[i])) { cur = i; break; }
+    }
+    SIZE_CYCLE.forEach(function (c) { img.classList.remove(c); });
+    const next = SIZE_CYCLE[(cur + 1) % SIZE_CYCLE.length];
+    img.classList.add(next);
+    // 저장 — 부모 attachments div 의 blur 이벤트 트리거
+    const parent = img.closest('[data-edit-key]');
+    if (parent) parent.dispatchEvent(new Event('blur'));
+  }
+  function attachImagePasteAndDrop(el) {
+    // 이미지를 허용하는 영역은 attachments 만 — 코멘트(group-comment/action-comment)는 텍스트만.
+    const acceptsImage = el.classList.contains('group-attachments') || el.classList.contains('action-attachments');
+    el.addEventListener('paste', function (e) {
+      const cd = e.clipboardData || window.clipboardData;
+      if (!cd) return;
+      const items = cd.items || [];
+      // 1) 이미지 파일 — attachments 만 받고, 코멘트에서는 스킵하고 텍스트 paste 로 폴백
+      if (acceptsImage) {
+        for (let i = 0; i < items.length; i++) {
+          const it = items[i];
+          if (it.kind === 'file' && it.type && it.type.indexOf('image/') === 0) {
+            e.preventDefault();
+            const f = it.getAsFile();
+            if (f) fileToResizedDataUrl(f, function (du) { if (du) insertImageDataUrl(el, du); });
+            return;
+          }
+        }
+      }
+      // 2) 텍스트 paste — HTML 우선(줄바꿈 보존), 없으면 평문. 외부 스타일은 br/div 만 유지.
+      e.preventDefault();
+      const htmlClip = cd.getData('text/html') || '';
+      const txt = cd.getData('text/plain') || '';
+      if (htmlClip && (htmlClip.indexOf('<br') !== -1 || htmlClip.indexOf('<p') !== -1 || htmlClip.indexOf('<div') !== -1)) {
+        // 평문을 줄바꿈 보존하여 삽입 (line by line)
+        const lines = txt.split(/\r?\n/);
+        for (let i = 0; i < lines.length; i++) {
+          if (i > 0) document.execCommand('insertLineBreak', false);
+          if (lines[i]) document.execCommand('insertText', false, lines[i]);
+        }
+      } else {
+        document.execCommand('insertText', false, txt);
+      }
+    });
+    if (acceptsImage) {
+      el.addEventListener('dragover', function (e) {
+        if (e.dataTransfer && e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) {
+          e.preventDefault();
+        }
+      });
+      el.addEventListener('drop', function (e) {
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (!files || !files.length) return;
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          if (f.type && f.type.indexOf('image/') === 0) {
+            e.preventDefault();
+            fileToResizedDataUrl(f, function (du) { if (du) insertImageDataUrl(el, du); });
+            return;
+          }
+        }
+      });
+    }
+    // 이미지 클릭 = 크기 토글
+    el.addEventListener('click', function (e) {
+      if (e.target && e.target.tagName === 'IMG' && e.target.classList.contains('inline-img')) {
+        cycleImageSize(e.target);
+      }
+    });
+  }
+
+  // 인라인 편집 적용
+  document.querySelectorAll('[data-edit-key]').forEach(function (el) {
+    const k = el.getAttribute('data-edit-key');
+    // 텍스트 + 줄바꿈을 보존해야 하는 영역(코멘트 + 첨부)은 innerHTML 저장.
+    // 타이틀(group-title)만 textContent — 한 줄 표제어라 줄바꿈 무관.
+    const isAttachments = el.classList.contains('group-attachments') || el.classList.contains('action-attachments');
+    const isComment     = el.classList.contains('group-comment')     || el.classList.contains('action-comment');
+    const isRich        = isAttachments || isComment;
+    if (edits[k] != null && edits[k] !== '') {
+      if (isRich) el.innerHTML = edits[k];
+      else el.textContent = edits[k];
+    }
+    el.addEventListener('blur', function () {
+      let v;
+      if (isRich) {
+        v = el.innerHTML.trim();
+        // 빈 줄바꿈만 있으면 (br/div 만 있고 텍스트·이미지 없음) 빈 값 처리 → placeholder 표시
+        if (!el.textContent.trim() && !el.querySelector('img')) v = '';
+      } else {
+        v = el.textContent.trim();
+      }
+      const all = loadEdits();
+      if (v) {
+        all[k] = v;
+      } else {
+        delete all[k];
+        if (isRich) el.innerHTML = '';  // 빈 줄바꿈 잔여(<br>) 정리해서 placeholder 다시 노출
+      }
+      try {
+        saveEdits(all);
+      } catch (err) {
+        // 용량 초과 — 이미지 자동 다운그레이드 후 재시도
+        _downgradeAllImages().then(function (downgraded) {
+          try {
+            saveEdits(loadEdits());  // 다운그레이드 트리거된 blur 이벤트가 저장한 상태로 한 번 더
+            alert('저장 용량 부족으로 이미지 자동 압축 적용했습니다 (해상도 800px / 품질 55%).');
+          } catch (err2) {
+            alert('편집 저장 실패 — 브라우저 저장 용량 초과.\n\n해결:\n· [편집 내보내기] 로 JSON 백업\n· 첨부 이미지 일부 삭제 (이미지 클릭 후 Delete 키)\n· 다른 탭의 같은 도메인 캐시 정리');
+          }
+        });
+      }
+    });
+    // Enter = blur (group-title 만 — 코멘트 영역은 줄바꿈 허용)
+    if (el.classList.contains('group-title')) {
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+      });
+    }
+    // 이미지 paste/drop + 텍스트 paste 정제 — 모든 rich 영역
+    if (isRich) attachImagePasteAndDrop(el);
+  });
+
+  // 편집 초기화 (텍스트 + 이미지 모두)
+  const resetBtn = document.getElementById('reset-edits');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      const msg = '편집한 모든 그룹 타이틀/코멘트/액션 방향/일예산 이미지를 초기화합니다.\n\n진행할까요?';
+      if (!confirm(msg)) return;
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(IMAGE_KEY);
+      // IndexedDB 도 비우기 (있으면)
+      Promise.all([idbDel(STORAGE_KEY), idbDel(IMAGE_KEY)]).catch(function () {}).then(function () {
+        location.reload();
+      });
+    });
+  }
+
+  // ===== 편집 내보내기 / 불러오기 =====
+  const exportBtn = document.getElementById('export-edits');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function () {
+      const payload = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        reportTitle: document.title || 'weekly-report',
+        edits:  loadEdits(),
+        images: loadImages(),
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+      a.href = url;
+      a.download = 'weekly-report-edits-' + stamp + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      const editCount  = Object.keys(payload.edits  || {}).length;
+      const imageCount = Object.keys(payload.images || {}).length;
+      const sizeKB = Math.round(blob.size / 1024);
+      alert('편집 내보내기 완료\n\n· 텍스트 편집 ' + editCount + '개\n· 일예산 이미지 ' + imageCount + '개\n· 파일 크기 약 ' + sizeKB + 'KB\n\nSlack/메일로 동료분께 보내세요.');
+    });
+  }
+
+  const importBtn  = document.getElementById('import-edits');
+  const importFile = document.getElementById('import-edits-file');
+  if (importBtn && importFile) {
+    importBtn.addEventListener('click', function () { importFile.click(); });
+    importFile.addEventListener('change', function (e) {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        let data;
+        try { data = JSON.parse(ev.target.result); }
+        catch (err) {
+          alert('JSON 파일 형식이 올바르지 않습니다.\n\n[편집 내보내기] 로 만든 파일이 맞는지 확인해 주세요.');
+          importFile.value = '';
+          return;
+        }
+        if (!data || (!data.edits && !data.images)) {
+          alert('이 파일은 편집 내보내기 형식이 아닙니다.');
+          importFile.value = '';
+          return;
+        }
+        const incomingEdits  = data.edits  || {};
+        const incomingImages = data.images || {};
+        const currentEdits   = loadEdits();
+        const currentImages  = loadImages();
+
+        // 충돌 검사: 같은 키에 다른 값이 있으면 카운트
+        let conflictEdits = 0, conflictImages = 0;
+        for (const k of Object.keys(incomingEdits))  if (currentEdits[k]  !== undefined && currentEdits[k]  !== incomingEdits[k])  conflictEdits++;
+        for (const k of Object.keys(incomingImages)) if (currentImages[k] !== undefined && currentImages[k] !== incomingImages[k]) conflictImages++;
+
+        let msg = '불러올 항목\n· 텍스트 ' + Object.keys(incomingEdits).length + '개\n· 이미지 ' + Object.keys(incomingImages).length + '개';
+        if (conflictEdits || conflictImages) {
+          msg += '\n\n⚠️ 충돌 ' + (conflictEdits + conflictImages) + '건 — 같은 항목이 이미 입력되어 있습니다.\n불러온 값으로 덮어쓸까요?';
+        } else {
+          msg += '\n\n현재 편집은 그대로 유지하고, 새 항목만 추가됩니다.\n진행할까요?';
+        }
+        if (!confirm(msg)) { importFile.value = ''; return; }
+
+        const merged = Object.assign({}, currentEdits, incomingEdits);
+        saveEdits(merged);
+        const mergedImg = Object.assign({}, currentImages, incomingImages);
+        if (!saveImages(mergedImg)) { importFile.value = ''; return; }
+        alert('병합 완료. 페이지를 새로고침합니다.');
+        location.reload();
+      };
+      reader.readAsText(f, 'utf-8');
+    });
+  }
+
+  // ===== 공유본 HTML 다운로드 — 입력한 코멘트·이미지가 박힌 채로 다운로드 =====
+  const shareBtn = document.getElementById('share-html');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', function () {
+      // 현재 DOM 전체를 그대로 직렬화. contenteditable textContent + 이미지 src(data:) 모두 inline 으로 들어감.
+      // 다른 사람이 이 HTML 을 받아 열어도 localStorage 없이 박힌 내용이 그대로 보임.
+      const html = '<!doctype html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const fname = (location.pathname || '').split('/').pop() || 'weekly-report.html';
+      a.href = url;
+      a.download = fname.replace(/\.html?$/i, '') + '_shared.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      const sizeKB = Math.round(blob.size / 1024);
+      alert(
+        '공유본 HTML 다운로드 완료 (약 ' + sizeKB + 'KB)\n\n' +
+        '※ 다음 단계 — 같은 URL 에 입력 내용 그대로 박힌 채로 다시 발행하기:\n\n' +
+        '1) 다운로드 폴더의 *_shared.html 파일을 확인\n' +
+        '2) C:\\Users\\superplanet\\Desktop\\주간리포트 자동화\\ 폴더의\n' +
+        '   "republish_with_edits.bat" 을 더블클릭\n' +
+        '3) 잠시 후 같은 공유 URL 에 박힌 내용이 그대로 올라갑니다.'
+      );
+    });
+  }
+
+  // ===== 일예산 이미지 paste/restore/delete =====
+  function showBudgetImage(area, dataUrl) {
+    area.classList.add('has-image');
+    area.querySelector('.budget-placeholder').style.display = 'none';
+    const img = area.querySelector('.budget-image');
+    img.src = dataUrl;
+    img.style.display = 'block';
+    area.querySelector('.budget-controls').style.display = 'block';
+  }
+  function clearBudgetImage(area) {
+    area.classList.remove('has-image');
+    area.querySelector('.budget-placeholder').style.display = 'block';
+    const img = area.querySelector('.budget-image');
+    img.src = '';
+    img.style.display = 'none';
+    area.querySelector('.budget-controls').style.display = 'none';
+  }
+
+  // 페이지 로드 시 저장된 이미지 복원
+  const savedImages = loadImages();
+  document.querySelectorAll('.budget-image-area').forEach(function (area) {
+    const k = area.getAttribute('data-image-key');
+    if (savedImages[k]) {
+      showBudgetImage(area, savedImages[k]);
+    } else {
+      // 공유본 HTML 에 inline 으로 박힌 data: URL 이미지도 인식 (다른 사람이 받아 열 때)
+      const img = area.querySelector('.budget-image');
+      if (img && img.getAttribute('src') && img.getAttribute('src').indexOf('data:') === 0) {
+        showBudgetImage(area, img.getAttribute('src'));
+      }
+    }
+  });
+
+  // 삭제 버튼
+  document.querySelectorAll('.budget-controls .btn-delete-image').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const area = btn.closest('.budget-image-area');
+      const k = area.getAttribute('data-image-key');
+      if (!confirm('이 앱의 일예산 이미지를 삭제할까요?')) return;
+      const all = loadImages();
+      delete all[k];
+      saveImages(all);
+      clearBudgetImage(area);
+      area.focus();
+    });
+  });
+
+  // paste 이벤트 처리 — 활성 탭의 budget-image-area에만 반응
+  document.addEventListener('paste', function (e) {
+    // contenteditable 영역에서 붙여넣기 중이면 무시 (텍스트 붙여넣기 허용)
+    if (e.target && e.target.closest && e.target.closest('[contenteditable="true"]')) return;
+
+    // 활성 탭에서 포커스된(또는 마우스 마지막 클릭한) budget-image-area를 찾는다
+    const activeSection = document.querySelector('.app-section.active');
+    if (!activeSection) return;
+    let area = null;
+    // 1) 포커스된 budget-image-area 우선
+    const focused = document.activeElement;
+    if (focused && focused.classList && focused.classList.contains('budget-image-area') && activeSection.contains(focused)) {
+      area = focused;
+    }
+    // 2) 활성 섹션에 budget-image-area가 1개뿐이면 그것 사용
+    if (!area) {
+      const areas = activeSection.querySelectorAll('.budget-image-area');
+      if (areas.length === 1) area = areas[0];
+    }
+    if (!area) return;
+
+    const items = (e.clipboardData || window.clipboardData).items || [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type && items[i].type.indexOf('image/') === 0) {
+        e.preventDefault();
+        const blob = items[i].getAsFile();
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          const dataUrl = ev.target.result;
+          // 용량 체크 (대략) — 5MB 초과 시 경고
+          const sizeKB = Math.round(dataUrl.length * 0.75 / 1024);
+          if (sizeKB > 5000) {
+            if (!confirm('이미지 크기가 약 ' + sizeKB + 'KB로 큽니다. 저장하시겠습니까?\n(브라우저 저장 한계 ~5MB이므로 여러 앱에 큰 이미지를 넣으면 실패할 수 있음)')) return;
+          }
+          const all = loadImages();
+          all[area.getAttribute('data-image-key')] = dataUrl;
+          if (saveImages(all)) {
+            showBudgetImage(area, dataUrl);
+          }
+        };
+        reader.readAsDataURL(blob);
+        return;
+      }
+    }
+  });
+
+  // 클릭으로 budget-image-area 포커스 (다음 paste 가 이 영역에 들어오도록)
+  document.querySelectorAll('.budget-image-area').forEach(function (area) {
+    area.addEventListener('click', function () { area.focus(); });
+  });
+
+  // 탭 전환
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      const target = tab.getAttribute('data-target');
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.toggle('active', t === tab); });
+      document.querySelectorAll('.app-section').forEach(function (s) { s.classList.toggle('active', s.id === target); });
+      // URL hash 업데이트 (북마크 가능)
+      history.replaceState(null, '', '#' + target);
+      // 활성 탭의 차트가 아직 안 그려졌으면 그리기
+      renderChartsFor(target);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+  });
+
+  // OS 블록 접기/펼치기
+  document.querySelectorAll('.os-header').forEach(function (h) {
+    h.addEventListener('click', function () { h.parentElement.classList.toggle('collapsed'); });
+  });
+
+  // Chart.js 렌더 (활성 탭만 lazy 렌더)
+  const renderedCharts = {};
+  function renderChartsFor(appId) {
+    if (renderedCharts[appId]) return;
+    const dataNode = document.getElementById('data-' + appId);
+    if (!dataNode) return;
+    const data = JSON.parse(dataNode.textContent);
+    const daily = data.daily30 || [];
+    if (daily.length === 0) { renderedCharts[appId] = true; return; }
+
+    const labels = daily.map(function (d, i) {
+      return (i % 3 === 0 || i === daily.length - 1) ? d.date.slice(5) : '';
+    });
+
+    // 스택 합 대비 % 계산 (툴팁용)
+    function stackPct(ctx) {
+      let total = 0;
+      ctx.chart.data.datasets.forEach(function (ds, i) {
+        if (ctx.chart.isDatasetVisible(i)) total += (ds.data[ctx.dataIndex] || 0);
+      });
+      return total > 0 ? (ctx.raw / total * 100).toFixed(1) : '0.0';
+    }
+    // 공통 축 스타일: 세로 눈금선 제거, 가로 눈금선만 옅은 점선
+    const AXIS_X = { stacked: true, grid: { display: false }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } };
+    function axisY(extra) {
+      return Object.assign({
+        stacked: true, beginAtZero: true,
+        grid: { color: '#e7ebf0', tickBorderDash: [3, 3], borderDash: [3, 3] },
+        border: { dash: [3, 3] },
+        ticks: { callback: function (v) { return v.toLocaleString(); } }
+      }, extra || {});
+    }
+
+    // DAU 차트: stacked column. 2개 시리즈 — 기존 / 신규 (OS 통합, 연한색=기존·진한색=신규)
+    const dauCtx = document.getElementById('dau-' + appId);
+    if (dauCtx) {
+      new Chart(dauCtx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: '기존 유저', data: daily.map(function (d) {
+                const dau = (d.dau_aos || 0) + (d.dau_ios || 0);
+                const nru = (d.nru_aos || 0) + (d.nru_ios || 0);
+                return Math.max(0, dau - nru);
+              }), backgroundColor: '#ee92a8', stack: 's' },
+            { label: '신규 유저', data: daily.map(function (d) {
+                return (d.nru_aos || 0) + (d.nru_ios || 0);
+              }), backgroundColor: '#f5d05e', stack: 's' },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              mode: 'index', intersect: false,
+              callbacks: {
+                label: function (ctx) {
+                  return ctx.dataset.label + ': ' + (ctx.raw || 0).toLocaleString() + '명 (' + stackPct(ctx) + '%)';
+                }
+              }
+            }
+          },
+          scales: { x: AXIS_X, y: axisY() }
+        }
+      });
+    }
+
+    // 매출 차트: 인앱 / 광고 (+웹샵 매출 있는 타이틀만 아가님_웹샵 시리즈 추가), 만원 단위
+    const revCtx = document.getElementById('rev-' + appId);
+    if (revCtx) {
+      const revDatasets = [
+        { label: '인앱', data: daily.map(function (d) { return Math.round(((d.rev_iap_aos || 0) + (d.rev_iap_ios || 0)) / 10000); }), backgroundColor: '#9fd4aa', stack: 's' },
+        { label: '광고', data: daily.map(function (d) { return Math.round(((d.rev_iaa_aos || 0) + (d.rev_iaa_ios || 0)) / 10000); }), backgroundColor: '#a4c8ef', stack: 's' },
+      ];
+      if (daily.some(function (d) { return (d.rev_aganim || 0) > 0; })) {
+        revDatasets.push({ label: '아가님_웹샵', data: daily.map(function (d) { return Math.round((d.rev_aganim || 0) / 10000); }), backgroundColor: '#c5aee6', stack: 's' });
+      }
+      new Chart(revCtx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: revDatasets
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              mode: 'index', intersect: false,
+              callbacks: {
+                label: function (ctx) {
+                  return ctx.dataset.label + ': ₩' + (ctx.raw * 10000).toLocaleString() + ' (' + stackPct(ctx) + '%)';
+                }
+              }
+            }
+          },
+          scales: {
+            x: AXIS_X,
+            y: axisY({ title: { display: true, text: '매출 (만원)' } })
+          }
+        }
+      });
+    }
+
+    renderedCharts[appId] = true;
+  }
+
+  // 초기 활성 탭 (URL hash 우선). 탭이 없는 단일 앱 보고서는 첫 섹션 자동 활성화.
+  const initial = (location.hash || '').replace('#', '');
+  const initTab = document.querySelector(initial ? '.tab[data-target="' + initial + '"]' : '.tab');
+  if (initTab) {
+    initTab.click();
+  } else {
+    const firstSection = document.querySelector('.app-section');
+    if (firstSection) {
+      firstSection.classList.add('active');
+      renderChartsFor(firstSection.id);
+    }
+  }
+
+  // ===== PDF로 저장 — 모든 탭 펼치고 차트 강제 렌더 후 인쇄 =====
+  const pdfBtn = document.getElementById('save-pdf');
+  if (pdfBtn) {
+    pdfBtn.addEventListener('click', async function () {
+      pdfBtn.disabled = true;
+      const originalLabel = pdfBtn.textContent;
+      pdfBtn.textContent = '⏳ 차트 렌더 중...';
+      // 인쇄 전 열려있던 코호트 패널 기억 (인쇄 후 원상 복구)
+      const openedByPdf = [];
+      try {
+        // 1) 모든 섹션 일시적으로 펼치기
+        document.body.classList.add('print-mode');
+        // 1.5) 코호트 회수 곡선 패널 전부 펼치기
+        document.querySelectorAll('details.cohort-details:not([open])').forEach(function (d) {
+          d.open = true;
+          openedByPdf.push(d);
+        });
+        // 2) 모든 앱의 차트 강제 렌더
+        document.querySelectorAll('.app-section').forEach(function (s) {
+          renderChartsFor(s.id);
+        });
+        // 3) Chart.js가 캔버스에 그릴 시간 확보 (animation: false 라 보통 1프레임이면 끝나지만 여유)
+        await new Promise(function (r) { setTimeout(r, 600); });
+        // 4) 인쇄 다이얼로그
+        window.print();
+      } finally {
+        // 5) 인쇄 다이얼로그 닫힌 뒤 화면 복원
+        setTimeout(function () {
+          document.body.classList.remove('print-mode');
+          openedByPdf.forEach(function (d) { d.open = false; });
+          pdfBtn.disabled = false;
+          pdfBtn.textContent = originalLabel;
+        }, 800);
+      }
+    });
+  }
+
+  // 인쇄 단축키 (Ctrl+P) 도 같은 흐름으로 처리되도록 보강
+  window.addEventListener('beforeprint', function () {
+    document.body.classList.add('print-mode');
+    document.querySelectorAll('details.cohort-details:not([open])').forEach(function (d) { d.open = true; });
+    document.querySelectorAll('.app-section').forEach(function (s) { renderChartsFor(s.id); });
+  });
+  window.addEventListener('afterprint', function () {
+    document.body.classList.remove('print-mode');
+  });
+})();
+</script></body></html>
