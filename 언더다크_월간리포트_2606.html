@@ -143,8 +143,9 @@ td.bar-cell { position: relative; font-weight: 700; }
 /* 2단 카드 안 표는 살짝 컴팩트하게 — 일반 노트북 폭(1600대)에서도 가로 스크롤 없이 맞춤 */
 .media-grid .cohort-mtable { font-size: 12.5px; }
 .media-grid .cohort-mtable th, .media-grid .cohort-mtable td { padding: 7px 5px; }
-/* 종합요약 Summary 코멘트 — 개발사 대표가 가장 먼저 보는 핵심 영역이라 본문보다 크게 */
-.summary-comment {
+/* 종합요약 Summary 코멘트 — 개발사 대표가 가장 먼저 보는 핵심 영역이라 본문보다 크게.
+   .group-comment 기본 규칙(13px)이 뒤에 오므로 복합 선택자로 우선순위 확보 */
+.group-comment.summary-comment {
   margin: 8px 0 14px;
   font-size: 16px;
   line-height: 1.65;
