@@ -157,9 +157,9 @@ td.bar-cell { position: relative; font-weight: 700; }
   color: #aaa; font-style: italic; font-size: 11.5px;
 }
 .group-attachments:focus, .action-attachments:focus { background: #fff8b8; border-color: #d6a83e; }
-/* 인라인 이미지 — 기본 100% (코멘트 폭). 클릭으로 4단계 크기 토글. */
+/* 인라인 이미지 — 기본 = 원본 크기 (컨테이너 초과 시만 축소 → 업스케일 블러 없음). 클릭으로 4단계 크기 토글. */
 .inline-img {
-  display: block; width: 100%; max-width: 100%; height: auto;
+  display: block; width: auto; max-width: 100%; height: auto;
   border-radius: 4px; border: 1px solid #ddd; margin: 0;
   cursor: zoom-in;
   transition: width 0.15s ease;
@@ -545,15 +545,28 @@ document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.get
     return canvas.toDataURL('image/jpeg', quality);
   }
   function fileToResizedDataUrl(file, cb) {
+    // 화질 우선: 가로 2400px 이하면 원본 그대로(재인코딩 없음 — PNG 스크린샷 무손실 유지).
+    // 초과 시에만 2400px 로 축소하되 PNG 인코딩으로 텍스트 선명도 보존.
+    // 용량은 localStorage 초과 시 IndexedDB 가 자동으로 받아줌.
     const reader = new FileReader();
     reader.onload = function (ev) {
+      const orig = ev.target.result;
       const img = new Image();
       img.onload = function () {
-        // 1200px / 품질 0.75 — 가로 100% 표시 시 가독성 충분, 한 장 ~80-150KB.
-        cb(_canvasToDataUrl(img, 1200, 0.75), img);
+        const MAX_W = 2400;
+        if (img.width <= MAX_W) { cb(orig, img); return; }
+        const scale = MAX_W / img.width;
+        const w = MAX_W, h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, w, h);
+        cb(canvas.toDataURL('image/png'), img);
       };
       img.onerror = function () { cb(null, null); };
-      img.src = ev.target.result;
+      img.src = orig;
     };
     reader.onerror = function () { cb(null, null); };
     reader.readAsDataURL(file);
